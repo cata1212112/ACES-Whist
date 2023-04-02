@@ -1,4 +1,6 @@
-package ACES
+package main
+
+import "fmt"
 
 type suites int
 
@@ -35,5 +37,5 @@ func (card *Card) equals(otherCard Card) bool {
 }
 
 func (card *Card) showCard() {
-	//fmt.Println(string(card.value) + " " + card.suite)
+	fmt.Printf("%d %d\n", card.suite, card.value)
 }

@@ -1,4 +1,4 @@
-package ACES
+package main
 
 import (
 	"math/rand"
@@ -19,7 +19,7 @@ type Deck struct {
 
 func newDeck() *Deck {
 	deck := new(Deck)
-
+	deck.index = 0
 	for i := 7; i < 11; i++ {
 		for _, s := range []suites{HEARTS, SPADES, DIAMONDS, CLUBS} {
 			deck.cards = append(deck.cards, Card{value: i, suite: s})
@@ -53,8 +53,8 @@ func (deck *Deck) giveCards(i int) []Card {
 	if i > deckSize-deck.index+1 {
 		return nil
 	}
-	var aux []Card
-	copy(deck.cards[deck.index:deck.index+i], aux)
+	aux := make([]Card, i)
+	copy(aux, deck.cards[deck.index:deck.index+i])
 	deck.index += i
 	return aux
 }

@@ -1,12 +1,18 @@
-package ACES
+package main
 
-import "fmt"
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strconv"
+)
 
 type Player struct {
-	name  string
-	bid   int
-	score int
-	cards []Card
+	name   string
+	bid    int
+	score  int
+	cards  []Card
+	tricks int
 }
 
 func (player *Player) setName(name string) {
@@ -26,14 +32,20 @@ func (player *Player) makeBid(isLast bool, sumBids int, numberOfCards int) {
 	ok := 1
 	for ok == 1 {
 		fmt.Println("Please make bid " + player.name + ":")
-		fmt.Scan("%d", &player.bid)
-		if isLast && player.bid != numberOfCards-sumBids {
+		reader := bufio.NewReader(os.Stdin)
+		text, _ := reader.ReadString('\n')
+		player.bid, _ = strconv.Atoi(text)
+
+		if isLast == true && player.bid != numberOfCards-sumBids {
+			ok = 0
+		} else {
 			ok = 0
 		}
 	}
 }
 
 func (player *Player) giveCards(cards []Card) {
+	player.cards = make([]Card, len(cards))
 	copy(player.cards, cards)
 }
 
@@ -46,22 +58,36 @@ func (player *Player) hasSuite(card Card) bool {
 	return false
 }
 
-func (player *Player) playCard(first Card, trump Card) Card {
+func (player *Player) playCard(first *Card, trump *Card) Card {
 
-	var validCards []Card
-	hasFirst := player.hasSuite(first)
-	hasTrump := player.hasSuite(trump)
+	validCards := make([]Card, len(player.cards))
+	index := 0
+	var hasFirst bool
+	var hasTrump bool
+	if first == nil {
+		hasFirst = false
+	} else {
+		hasFirst = player.hasSuite(*first)
+	}
+	if trump == nil {
+		hasTrump = false
+	} else {
+		hasTrump = player.hasSuite(*trump)
+	}
 
 	if hasFirst {
 		for _, elem := range player.cards {
 			if elem.suite == first.suite {
-				validCards = append(validCards, elem)
+				validCards[index] = elem
+				index++
 			}
 		}
 	} else if hasTrump {
+
 		for _, elem := range player.cards {
 			if elem.suite == trump.suite {
-				validCards = append(validCards, elem)
+				validCards[index] = elem
+				index++
 			}
 		}
 	} else {
@@ -70,9 +96,13 @@ func (player *Player) playCard(first Card, trump Card) Card {
 
 	ok := 1
 	var i int
+	fmt.Println("Cartile valide sunt")
+	fmt.Println(validCards)
 	for ok == 1 {
-		fmt.Println("Please choose card from the valid ones" + player.name + ":")
-		fmt.Scan("%d", &i)
+		fmt.Println("Please choose card from the valid ones " + player.name + ":")
+		reader := bufio.NewReader(os.Stdin)
+		text, _ := reader.ReadString('\n')
+		i, _ = strconv.Atoi(text)
 		if i >= 0 && i <= len(validCards) {
 			ok = 0
 		}

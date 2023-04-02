@@ -1,4 +1,6 @@
-package ACES
+package main
+
+import "fmt"
 
 type Game struct {
 	numberOfCards []int
@@ -18,5 +20,17 @@ func (game *Game) addPlayer(player Player) {
 }
 
 func (game *Game) play() {
+	for _, elem := range game.numberOfCards {
+		for j := 0; j < 4; j++ {
+			game.players[j].tricks = 0
+		}
+		round := new(Round)
+		game.deckOfCards.index = 0
+		game.deckOfCards.shuffleDeck()
+		round.playRound(&game.players, &game.deckOfCards, elem)
+	}
+	for j := 0; j < 4; j++ {
+		fmt.Println(game.players[j].score)
+	}
 
 }
