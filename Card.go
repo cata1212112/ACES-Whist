@@ -2,6 +2,15 @@ package main
 
 import "fmt"
 
+// Card
+// holds the value and suite of a card
+// func (card *Card) compare(winningCard Card, trump *Card, first Card) bool
+// 		used to compare the current card with the winning card -> return true if the current card is better
+//															   -> return false, otherwise
+
+// func (card *Card) equals(otherCard Card) bool
+//		used to compare the suites of two cards
+
 type suites int
 
 const (
@@ -36,6 +45,6 @@ func (card *Card) equals(otherCard Card) bool {
 	return card.suite == otherCard.suite
 }
 
-func (card *Card) showCard() {
+func (card *Card) showCard() { // nu avem nevoie de functia asta
 	fmt.Printf("%d %d\n", card.suite, card.value)
 }

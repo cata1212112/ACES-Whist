@@ -2,6 +2,14 @@ package main
 
 import "fmt"
 
+// Game
+// func newGame() *Game
+//		creates a new game
+//	func (game *Game) addPlayer(player Player)
+// 		used to add a player to the current game
+// func (game *Game) play()
+// 		plays the game according to the rules
+
 type Game struct {
 	numberOfCards []int
 	deckOfCards   Deck

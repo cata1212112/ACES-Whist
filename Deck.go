@@ -5,6 +5,15 @@ import (
 	"sort"
 )
 
+// Deck
+// holds a deck of cards
+// func newDeck() *Deck
+//		creates a new deck
+// func (deck *Deck) shuffleDeck()
+//		shuffles the deck of card
+// func (deck *Deck) giveCards(i int) []Card
+//		used to remove i cards from the deck
+
 const J = 12
 const Q = 13
 const K = 14

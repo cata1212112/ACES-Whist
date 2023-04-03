@@ -7,6 +7,22 @@ import (
 	"strconv"
 )
 
+//Player
+// func (player *Player) setName(name string)
+// 		name setter
+// func (player *Player) getBid() int
+// 		bid getter
+// func (player *Player) addScore(x int)
+// 		adds x score to a player
+// func (player *Player) makeBid(isLast bool, sumBids int, numberOfCards int)
+// 		requests the player to make a bid
+// func (player *Player) giveCards(cards []Card)
+//		used to five cards to the player
+//	func (player *Player) hasSuite(card Card) bool
+//		checks if the player has a card with the same suite as card
+// func (player *Player) playCard(first *Card, trump *Card) Card
+//		requests the player to play a card
+
 type Player struct {
 	name   string
 	bid    int

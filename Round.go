@@ -1,5 +1,9 @@
 package main
 
+// Round
+// playRound
+// plays the round according to the rules
+
 type Round struct {
 	sumOfBids int
 	trump     Card
