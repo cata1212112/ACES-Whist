@@ -1,7 +1,11 @@
 package main
 
 import (
+	// "fmt"
 	"log"
+
+	"github.com/gorilla/mux"
+	"net/http"
 )
 
 func main() {
@@ -9,6 +13,12 @@ func main() {
 		log.Printf("Error opening database: %v", err)
 	}
 	defer closeDatabase()		// close the database after main returns
+
+	router := mux.NewRouter()
+
+	router.HandleFunc("/", testHandler).Methods("GET")
+	router.HandleFunc("/login", loginGETHandler).Methods("GET")
+	router.HandleFunc("/login", loginPOSTHandler).Methods("POST")
 
 	// var player1 Player
 	// var player2 Player
@@ -26,16 +36,41 @@ func main() {
 	// game.addPlayer(player4)
 
 	// game.play()
-	testUser := UserCreate{
-		email: "email@gmail.com",
-		username: "username", 
-		password: "password",
-	}
 
-	if err := register(&testUser); err == false {
-		log.Printf("Couldn't create user: %v", testUser.username)
-	} else {
-		log.Printf("Created user: %v", testUser.username)
-	}
 
+
+	// Login Tests
+	// userToLogin := UserLoginRequest {
+	// 	username: "username",
+	// 	password: "password",
+	// }
+
+	// fmt.Println("First login (OK)")
+	// if login(&userToLogin) {
+	// 	fmt.Println("Login successful")
+	// } else {
+	// 	fmt.Println("Login failed")
+	// }
+
+	// fmt.Println()
+	// fmt.Println("Second login (user does not exist)")
+	// tempUsername := userToLogin.username
+	// userToLogin.username = "badUsername"
+	// if login(&userToLogin) {
+	// 	fmt.Println("Login successful")
+	// } else {
+	// 	fmt.Println("Login failed")
+	// }
+
+	// userToLogin.username = tempUsername
+	// userToLogin.password = "badPassword"
+	// fmt.Println()
+	// fmt.Println("Third login (incorrect password)")
+	// if login(&userToLogin) {
+	// 	fmt.Println("Login successful")
+	// } else {
+	// 	fmt.Println("Login failed")
+	// }
+
+	http.ListenAndServe(":5000", router)
 }

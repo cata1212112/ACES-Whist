@@ -1,21 +1,27 @@
 package main
 
+import (
+	"log"
+	"net/http"
+)
+
 type User struct {
-	id       int64  `json:"id"`
 	username string `json:"username"`
 	email    string `json:"email"`
+	passwordHash string 
+}
+
+type UserLoginRequest struct {
+	username string `json:"username"`
+	password string `json:"password"`
+	session_id string `json:"session-id"`
 }
 
 type UserCreate struct {
 	username string `json:"username"`
 	email    string `json:"email"`
 	password string `json:"password"`
-}
-
-type UserRequest struct {
-	username string `json:"username"`
-	password string `json:"password"`
-	token    string `json:"token"`
+	confirmPassword string `json:"confirmPassword"`
 }
 
 func createUser(user *UserCreate) error {
@@ -27,23 +33,31 @@ func createUser(user *UserCreate) error {
 
 func getUserByUsername(username string) (*User, error) {
 	var myUser User
-	if err := DB.QueryRow("SELECT username FROM users WHERE username = $1", username).Scan(&myUser); err != nil {
+	if err := DB.QueryRow("SELECT username, email, password FROM users WHERE username = $1", username).Scan(&myUser.username, &myUser.email, &myUser.passwordHash); err != nil {
 		return nil, err;
 	}
 	return &myUser, nil;
 }
 
-// func getAllusers() ([]User, error) {
-// 	var (
-// 		rows *sql.Rows
-// 	 	err error
-// 		result []User
-// 	)
+func getUserByEmail(email string) (*User, error) {
+	var myUser User
+	if err := DB.QueryRow("SELECT username, email, password FROM users WHERE email = $1", email).Scan(&myUser.username, &myUser.email, &myUser.passwordHash); err!= nil {
+        return nil, err;
+    }
+	return &myUser, nil;
+}
 
-// 	if rows, err = DB.Query("SELECT * FROM users"); err != nil {
-// 		return nil, err
-// 	}
+func testUserCreate() {		// modify to test the create of other users
+	testUser := UserCreate{
+		email: "email@gmail.com",
+		username: "username", 
+		password: "password",
+		confirmPassword: "password",
+	}
 
-// 	result = make([]User, len(rows))
-
-// }
+	if status := register(&testUser); status != http.StatusOK {
+		log.Printf("Couldn't create user: %v (Status code: %v)\n", testUser.username, status)
+	} else {
+		log.Printf("Created user: %v\n", testUser.username)
+	}
+}
