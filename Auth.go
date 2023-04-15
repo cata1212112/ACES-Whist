@@ -1,12 +1,12 @@
 package main
 
 import (
-	"log"
-	// "fmt"
+	// "log"
+	"fmt"
 	"encoding/gob"
 	"net/http"
 
-	"github.com/gorilla/context"
+	// "github.com/gorilla/context"
 	"github.com/gorilla/sessions"
 	_ "github.com/lib/pq"
 )
@@ -19,7 +19,25 @@ func cookieStoreInit() {
 	gob.Register(&User{})
 }
 
-func login(userToLogin *UserLoginRequest) int {
+func authMiddleware(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Printf("Request URL and METHOD: %s	%s\n", r.URL.String(), r.Method)
+        // Check if user is authenticated
+        if !isAuthenticated(r) && r.URL.String() != "/" && r.URL.String() != "/login" && r.URL.String() != "/register"{
+            http.Error(w, "Unauthorized", http.StatusUnauthorized)
+            return
+        }
+        next.ServeHTTP(w, r)
+    })
+}
+
+func isAuthenticated(r *http.Request) bool {
+    session, _ := store.Get(r, "session-id")
+	_, ok := session.Values["username"]
+	return ok
+}
+
+func checkLoginOK(userToLogin *UserLoginRequest) int {
 	user, err := getUserByUsername(userToLogin.username)
 	if err != nil {
 		return http.StatusNotFound // There is no user with that username
@@ -28,8 +46,6 @@ func login(userToLogin *UserLoginRequest) int {
 	if !checkPasswordHash(userToLogin.password, user.passwordHash) {
 		return http.StatusUnauthorized // Password is incorrect
 	}
-
-	// TODO: do the login process with the user and set the session_id field to something
 
 	return http.StatusOK // replace with cookie set and session initialization
 }
@@ -60,41 +76,8 @@ func register(userToCreate *UserCreate) int {
 	return http.StatusOK // Success
 }
 
-func logout() {
-	// remove the cookie and destroy the session
-}
-
-func logMW(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("%s - %s (%s)", r.Method, r.URL.Path, r.RemoteAddr)
-
-		// compare the return-value to the authMW
-		next.ServeHTTP(w, r)
-	})
-}
-
-func authMW(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// read basic auth information
-		usr, _, ok := r.BasicAuth()
-
-		// if there is no basic auth (no matter which credentials)
-		if !ok {
-			errMsg := "Authentication error!"
-			// return a 403 forbidden
-			http.Error(w, errMsg, http.StatusForbidden)
-			log.Println(errMsg)
-
-			// stop processing route
-			return
-		}
-
-		// let's assume we check the user against a database to get
-		// his admin-right and put this to the request context
-		context.Set(r, "isAdmin", true)
-
-		// else continue processing
-		log.Printf("User %s logged in.", usr)
-		next(w, r)
-	}
+func logout(w http.ResponseWriter, r *http.Request) error {
+	session, _ := store.Get(r, "session-id")
+	session.Options.MaxAge = -1
+	return session.Save(r, w)
 }

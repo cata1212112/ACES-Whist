@@ -1,24 +1,35 @@
 package main
 
 import (
-	// "fmt"
+	"fmt"
 	"log"
-
-	"github.com/gorilla/mux"
 	"net/http"
+	"github.com/gorilla/mux"
 )
+
+var Port = 5000
 
 func main() {
 	if err := openDatabase(); err != nil {
 		log.Printf("Error opening database: %v", err)
 	}
-	defer closeDatabase()		// close the database after main returns
+	defer closeDatabase() // close the database after main returns
 
 	router := mux.NewRouter()
+	router.Use(authMiddleware) // Adding the auth middleware to the router
 
-	router.HandleFunc("/", testHandler).Methods("GET")
+	router.HandleFunc("/", indexHandler).Methods("GET")
 	router.HandleFunc("/login", loginGETHandler).Methods("GET")
 	router.HandleFunc("/login", loginPOSTHandler).Methods("POST")
+	router.HandleFunc("/setCookie", cookieTestHandler).Methods("GET")
+	router.HandleFunc("/getCookies", getCookiesHandler).Methods("GET")
+	router.HandleFunc("/register", registerPOSTHandler).Methods("POST")
+	router.HandleFunc("/register", registerGETHandler).Methods("GET")
+	router.HandleFunc("/logout", logoutHandler).Methods("POST")
+	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		renderError(w, http.StatusNotFound)
+	})
 
 	// var player1 Player
 	// var player2 Player
@@ -37,40 +48,5 @@ func main() {
 
 	// game.play()
 
-
-
-	// Login Tests
-	// userToLogin := UserLoginRequest {
-	// 	username: "username",
-	// 	password: "password",
-	// }
-
-	// fmt.Println("First login (OK)")
-	// if login(&userToLogin) {
-	// 	fmt.Println("Login successful")
-	// } else {
-	// 	fmt.Println("Login failed")
-	// }
-
-	// fmt.Println()
-	// fmt.Println("Second login (user does not exist)")
-	// tempUsername := userToLogin.username
-	// userToLogin.username = "badUsername"
-	// if login(&userToLogin) {
-	// 	fmt.Println("Login successful")
-	// } else {
-	// 	fmt.Println("Login failed")
-	// }
-
-	// userToLogin.username = tempUsername
-	// userToLogin.password = "badPassword"
-	// fmt.Println()
-	// fmt.Println("Third login (incorrect password)")
-	// if login(&userToLogin) {
-	// 	fmt.Println("Login successful")
-	// } else {
-	// 	fmt.Println("Login failed")
-	// }
-
-	http.ListenAndServe(":5000", router)
+	http.ListenAndServe(":" + fmt.Sprint(Port), router)
 }

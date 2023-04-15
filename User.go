@@ -14,7 +14,6 @@ type User struct {
 type UserLoginRequest struct {
 	username string `json:"username"`
 	password string `json:"password"`
-	session_id string `json:"session-id"`
 }
 
 type UserCreate struct {

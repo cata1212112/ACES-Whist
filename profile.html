@@ -7,6 +7,9 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>Login Successful!</h1>
+    <h2> Hello there, {{.Username}} </h2>
+    <form action="/logout" method="post">
+        <button name="foo" value="upvote">Log Out</button>
+    </form>
 </body>
 </html>
