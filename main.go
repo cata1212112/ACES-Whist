@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"github.com/gorilla/mux"
 )
 
 var Port = 5000
@@ -19,6 +19,12 @@ func main() {
 	router.Use(authMiddleware) // Adding the auth middleware to the router
 
 	router.HandleFunc("/", indexHandler).Methods("GET")
+	router.HandleFunc("/lobbies", lobbiesHandler).Methods("GET")
+	router.HandleFunc("/connect", onConnect).Methods("POST")
+	router.HandleFunc("/disconnect", onDisconnect).Methods("POST")
+	router.HandleFunc("/getAllLobbies", getAllLobbies).Methods("GET")
+	router.HandleFunc("/lobby/{lobbyName}", lobbyHandler).Methods("GET")
+	router.HandleFunc("/send", sendMessageHandler).Methods("POST")
 	router.HandleFunc("/login", loginGETHandler).Methods("GET")
 	router.HandleFunc("/login", loginPOSTHandler).Methods("POST")
 	router.HandleFunc("/setCookie", cookieTestHandler).Methods("GET")
@@ -48,5 +54,5 @@ func main() {
 
 	// game.play()
 
-	http.ListenAndServe(":" + fmt.Sprint(Port), router)
+	http.ListenAndServe(":"+fmt.Sprint(Port), router)
 }
