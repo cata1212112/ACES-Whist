@@ -208,6 +208,7 @@ func cookieTestHandler(w http.ResponseWriter, r *http.Request) {
 	session.Options = &sessions.Options{
 		Path:   "/",
 		MaxAge: 5, // test here
+		// MaxAge:   3600 * 24 * 7,	// the cookie will expire in a week
 		HttpOnly: true,
 	}
 
