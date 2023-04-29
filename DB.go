@@ -2,14 +2,18 @@ package main
 
 import (
 	"database/sql"
-	_ "github.com/lib/pq"
+	"github.com/lib/pq"
 )
 
 var DB *sql.DB
 
 func openDatabase() error {
 	var err error
-	DB, err = sql.Open("postgres", "user=postgres password=postgressUserPa55 dbname=Aces-Whist sslmode=disable")
+	pgURL, err := pq.ParseURL("postgres://bfpvzhah:cld_-IeKKFi7avbOPqoiKRu4V4GEMSx7@snuffleupagus.db.elephantsql.com/bfpvzhah")
+	if err != nil {
+		return err 
+	}
+	DB, err = sql.Open("postgres", pgURL)
 	if err != nil {
 		return err
 	}
