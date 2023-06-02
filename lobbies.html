@@ -1,4 +1,5 @@
 <html>
+<link rel="stylesheet" href="./style/lobbies.css">
 <script type="text/javascript">
     function createLobby() {
         nume = document.getElementById("nume_lobby").value
@@ -17,21 +18,32 @@
                 var aux = JSON.parse(xhr.response)
                 channels = aux["result"]["channels"]
                 for (const x in channels) {
-                    const lobby = document.createElement("li")
-                    const button = document.createElement("button")
-                    const textnode = document.createTextNode(x);
-                    clients = channels[x]["num_clients"]
-                    button.innerHTML = `Join lobby ${clients}/4`
-                    button.addEventListener('click', function () {
-                        window.location.replace("/lobby/"+x)
-                    })
-                    if (clients === 4) {
-                        continue
+                    xhr.open("GET", 'http://localhost:5000/lobbyMembers/' + x)
+                    xhr.onload = function () {
+                        var aux = JSON.parse(xhr.response)
+                        console.log(aux)
+                        const lobby = document.createElement("li")
+                        const button = document.createElement("button")
+                        const textnode = document.createElement("span");
+                        const owner = document.createElement("span");
+                        owner.innerHTML = aux[0]
+                        textnode.innerHTML = 'Owner: ' + x;
+                        lobby.className = "lobby-list-item";
+                        clients = channels[x]["num_clients"]
+                        button.innerHTML = `Join lobby ${clients}/4`
+                        button.addEventListener('click', function () {
+                            window.location.replace("/lobby/"+x)
+                        })
+                        if (clients < 4) {
+                            lobby.appendChild(textnode);
+                            lobby.appendChild(owner);
+                            lobby.appendChild(button)
+                            document.getElementById("lobbies").appendChild(lobby)
+                            console.log(channels)
+                        }
+
                     }
-                    lobby.appendChild(textnode);
-                    document.getElementById("lobbies").appendChild(lobby)
-                    document.getElementById("lobbies").appendChild(button)
-                    console.log(channels)
+                    xhr.send()
                 }
             }
         }
@@ -39,8 +51,12 @@
     }
 
 </script>
-
-<button onclick="createLobby()">Create Lobby</button>
-<input type="text" placeholder="Lobby name" id="nume_lobby">
-<div id="lobbies"></div>
+<div id="container">
+    <h1 class="title">Lobbies</h1>
+    <div class="button-container">
+        <input type="text" placeholder="Lobby name" id="nume_lobby">
+        <button onclick="createLobby()">Create Lobby</button>
+    </div>
+<ul id="lobbies" class="lobby-list"></ul>
+</div>
 </html>

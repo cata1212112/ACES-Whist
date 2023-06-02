@@ -10,6 +10,7 @@ import (
 var Port = 5000
 
 func main() {
+	http.FileServer(http.Dir("style"))
 	if err := openDatabase(); err != nil {
 		log.Printf("Error opening database: %v", err)
 	}
@@ -32,6 +33,10 @@ func main() {
 	router.HandleFunc("/register", registerPOSTHandler).Methods("POST")
 	router.HandleFunc("/register", registerGETHandler).Methods("GET")
 	router.HandleFunc("/logout", logoutHandler).Methods("POST")
+	router.HandleFunc("/style/{filename}", getStyleFile).Methods("GET")
+	router.HandleFunc("/addToLobby", addToLobbyHandler).Methods("POST")
+	router.HandleFunc("/removeFromLobby", removeFromLobbyHandler).Methods("POST")
+	router.HandleFunc("/lobbyMembers/{lobbyName}", lobbyMembers).Methods("GET")
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		renderError(w, http.StatusNotFound)

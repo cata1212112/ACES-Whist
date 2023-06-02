@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="../style/lobby.css">
     <meta charset="UTF-8">
 </head>
 <script src="https://unpkg.com/centrifuge@3.1.0/dist/centrifuge.js"></script>
@@ -54,6 +55,25 @@
     }
     client.connect();
     const sub = client.newSubscription(document.getElementById("lobby_name").innerHTML)
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", 'http://localhost:5000/addToLobby')
+    xhr.setRequestHeader("Content-Type", "application/json");
+    var requestData = JSON.stringify({
+        lobby: document.getElementById("lobby_name").innerHTML,
+        name: document.getElementById("username").innerHTML
+    });
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.status === 200) {
+                console.log("Name added to the lobby successfully");
+
+
+            } else {
+                console.error("Error:", xhr.status, xhr.statusText);
+            }
+        }
+    };
+    xhr.send(requestData);
     sub.subscribe();
     sub.on('publication', function (ctx) {
         rasp = ctx.data
@@ -73,6 +93,9 @@
 
     function sendMessage() {
         const message = document.getElementById('message').value;
+        if (message.length === 0) {
+            return;
+        }
         const xhr = new XMLHttpRequest();
         xhr.open('POST', 'http://localhost:5000/send')
         xhr.setRequestHeader('Content-Type', 'application/json');
@@ -80,14 +103,35 @@
         }
         const data = {user: document.getElementById("username").innerHTML, message:message, channel: document.getElementById("lobby_name").innerHTML}
         xhr.send(JSON.stringify(data))
+        document.getElementById('message').value = '';
     }
+
+    xhr.open("GET", 'http://localhost:5000/lobbyMembers/' + document.getElementById("lobby_name").innerHTML)
+    xhr.onload = function () {
+        console.log(xhr.response)
+        vec = JSON.parse(xhr.response)
+        console.log(vec)
+        for (x in vec) {
+            console.log(vec[x])
+            var span = document.createElement("span");
+            span.innerHTML = vec[x];
+            document.getElementsByClassName("membrii")[0].appendChild(span);
+        }
+    }
+    xhr.send()
 </script>
 <body>
-    <h1>{{.LobbyName}}</h1>
-    <div id="chat"></div>
-    <div>
+<h1 class="lobby-name">{{.LobbyName}}</h1>
+<div class="membrii">
+    <h2>Membrii</h2>
+</div>
+<div id="container">
+    <div class="chat-input">
         <input placeholder="Message" type="text" id="message">
-        <button onclick="sendMessage()">Send</button>
+        <button onclick="sendMessage()" class="send-button">Send</button>
     </div>
+    <div id="chat">
+    </div>
+</div>
 </body>
 </html>

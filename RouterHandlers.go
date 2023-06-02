@@ -30,6 +30,7 @@ type ErrorPageData struct {
 }
 
 var connectedClients = make(map[string]bool)
+var lobbies = make(map[string][]string)
 var mutex = &sync.Mutex{}
 
 func isTokenAlreadyConnected(token string) bool {
@@ -326,4 +327,72 @@ func sendMessageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer resp.Body.Close()
 
+}
+
+func getStyleFile(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	filename := vars["filename"]
+
+	filePath := "style/" + filename
+
+	http.ServeFile(w, r, filePath)
+}
+
+func addToLobbyHandler(w http.ResponseWriter, r *http.Request) {
+	var requestData struct {
+		Lobby string `json:"lobby"`
+		Name  string `json:"name"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&requestData)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	lobby := requestData.Lobby
+	if _, ok := lobbies[lobby]; !ok {
+		lobbies[lobby] = make([]string, 0)
+	}
+	lobbies[lobby] = append(lobbies[lobby], requestData.Name)
+}
+
+func lobbyMembers(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	lobby := params["lobbyName"]
+	println(lobbies)
+	members, ok := lobbies[lobby]
+	if !ok {
+		http.Error(w, "Lobby not found", http.StatusNotFound)
+		return
+	}
+	responseData, err := json.Marshal(members)
+	if err != nil {
+		http.Error(w, "Error encoding JSON", http.StatusInternalServerError)
+		return
+	}
+	println(members)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(responseData)
+}
+
+func removeFromLobbyHandler(w http.ResponseWriter, r *http.Request) {
+	var requestData struct {
+		Lobby string `json:"lobby"`
+		Name  string `json:"name"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&requestData)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	lobby := requestData.Lobby
+	if _, ok := lobbies[lobby]; !ok {
+		lobbies[lobby] = make([]string, 0)
+	}
+	for i := 0; i < len(lobbies[lobby]); i++ {
+		if lobbies[lobby][i] == requestData.Name {
+			lobbies[lobby] = append(lobbies[lobby][:i], lobbies[lobby][i+1:]...)
+			break
+		}
+	}
 }
