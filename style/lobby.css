@@ -1,0 +1,224 @@
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient( to left, #ffcccc, #66ccff);
+    margin: 0;
+    padding: 0;
+}
+.membrii {
+    margin-left: 10px;
+    border-radius: 5px;
+    padding: 10px;
+    display: inline-block;
+    text-decoration: none;
+    background-color: #e8e2e2;
+    font-weight: bold;
+}
+#container_mare{
+    display: flex;
+    width: 100vw;
+}
+#container_joc {
+    flex: 0 0 75%;
+    display: grid;
+    flex-direction: column;
+    align-items: flex-start;
+    width: fit-content;
+    margin: 0 auto;
+    position: relative;
+}
+
+#carti_jucator {
+    justify-content: flex-start;
+    flex-direction: row;
+    position: absolute;
+    bottom: 0; /* Poziționăm carti_jucator la baza container_joc */
+    left: 20%;
+}
+
+
+#carti_intoarse_fata {
+    flex-direction: row;
+    position: absolute;
+    top: 0;
+    left: 20%;
+
+}
+#carti_intoarse_stanga {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    /*top: 50%; !* Poziționăm carti_intoarse_stanga în partea stângă a container_joc *!*/
+    left: 10%;
+
+}
+
+#carti_intoarse_dreapta {
+    display: flex;
+    flex-shrink: 1;
+    flex-direction: column;
+    position: absolute;
+    /*top: 50%; !* Poziționăm carti_intoarse_dreapta în partea dreaptă a container_joc *!*/
+    right: 7%;
+
+}
+
+#carti_jucator img{
+    width: 120px;
+    height: auto;
+
+}
+#carti_intoarse_stanga img,
+#carti_intoarse_dreapta img{
+    width: 60px;
+    height: 60px;
+    margin-bottom: 1px;
+}
+#carti_intoarse_fata img {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 1px;
+}
+#container_joc {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    grid-gap: 10px;
+    width: 600px;
+    height: 600px;
+}
+
+#carti_jucator {
+    grid-area: 3 / 2 / 4 / 3;
+}
+
+#carti_intoarse_dreapta {
+    grid-area: 3 / 1 / 4 / 4;
+}
+
+#carti_intoarse_stanga {
+    grid-area: 1 / 1 / 2 / 4;
+}
+
+#carti_intoarse_fata {
+    grid-area: 1 / 2 / 2 / 3;
+}
+
+
+/*#carti_intoarse_stanga {*/
+/*    position: relative;*/
+/*}*/
+
+/*#carti_intoarse_stanga img {*/
+/*    position: absolute;*/
+/*    transform: translateX(-50%);*/
+/*}*/
+
+/*#carti_intoarse_stanga img:not(:last-child) {*/
+/*    margin-right: -20px;*/
+/*}*/
+
+#container {
+    /*position: absolute;*/
+    flex: 0 0 25%;
+    /*margin-top: 3vh;*/
+    /*margin-left: 64vw;*/
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    /*padding: 20px;*/
+    box-sizing: border-box;
+}
+
+.lobby-name {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+#chat {
+    width: 400px;
+    height: 300px;
+    overflow-y: scroll;
+    background-color: #61c7ea;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#chat p {
+    margin: 0 0 10px;
+    padding: 8px;
+    border-radius: 4px;
+    background-color: #f2f2f2;
+}
+
+.chat-input {
+    display: flex;
+    align-items: center;
+    margin-top: 50px;
+}
+
+.chat-input input[type="text"] {
+    flex: 1;
+    height: 40px;
+    width: 330px;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.chat-input button {
+    height: 40px;
+    padding: 0 16px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.chat-input button:hover {
+    background-color: #0056b3;
+}
+
+#chat::-webkit-scrollbar {
+    width: 16px;
+}
+
+#chat::-webkit-scrollbar-track {
+    border-radius: 8px;
+    background-color: #e7e7e7;
+    border: 1px solid #cacaca;
+}
+
+#chat::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+    background-color: dodgerblue;
+}
+#buton_intoarcere_lobbies {
+    background-color: #007bff;
+    border-radius: 5px;
+    padding: 1px ;
+    display: inline-block;
+    text-decoration: none;
+    color: #ffffff;
+    font-weight: bold;
+
+}
+
+#buton_intoarcere_lobbies:hover {
+    background-color: #0056b3;
+}
+
+#buton_intoarcere_lobbies a {
+    color: #ffffff;
+    text-decoration: none;
+}

@@ -52,6 +52,7 @@
             }
         }
         xhr.send()
+
     }
     client.connect();
     const sub = client.newSubscription(document.getElementById("lobby_name").innerHTML)
@@ -105,33 +106,123 @@
         xhr.send(JSON.stringify(data))
         document.getElementById('message').value = '';
     }
-
-    xhr.open("GET", 'http://localhost:5000/lobbyMembers/' + document.getElementById("lobby_name").innerHTML)
+    // xhr.open("GET", 'http://localhost:5000/lobbyMembers/' + document.getElementById("lobby_name").innerHTML)
+    // xhr.onload = function () {
+    //     console.log(xhr.response)
+    //     vec = JSON.parse(xhr.response)
+    //     console.log(vec)
+    //     var addedMembers = []; // Variabila pentru a tine evidenta membrilor adaugati
+    //     for (x in vec) {
+    //         console.log(vec[x])
+    //         if (!addedMembers.includes(vec[x])) { // Verificam daca membrul exista deja in lista
+    //             console.log(vec[x])
+    //             var span = document.createElement("span");
+    //             span.innerHTML = vec[x];
+    //             document.getElementsByClassName("membrii")[0].appendChild(span);
+    //             addedMembers.push(vec[x]); // Adaugam membrul in lista de membri adaugati
+    //         }
+    //     }
+    // }
+    //
+    // xhr.send()
+    xhr.open("GET", 'http://localhost:5000/lobbyMembers/' + document.getElementById("lobby_name").innerHTML);
     xhr.onload = function () {
-        console.log(xhr.response)
-        vec = JSON.parse(xhr.response)
-        console.log(vec)
+        console.log(xhr.response);
+        var vec = JSON.parse(xhr.response);
+        console.log(vec);
+        var addedMembers = []; // Variabila pentru a tine evidenta membrilor adaugati
+        var currentPlayer = document.getElementById("lobby_name").innerHTML; // Numele jucatorului curent
+
         for (x in vec) {
-            console.log(vec[x])
-            var span = document.createElement("span");
-            span.innerHTML = vec[x];
-            document.getElementsByClassName("membrii")[0].appendChild(span);
+            console.log(vec[x]);
+            if (!addedMembers.includes(vec[x])) { // Verificam daca membrul exista deja in lista
+                console.log(vec[x]);
+                var span = document.createElement("span");
+                span.innerHTML = vec[x];
+
+                if (vec[x] === currentPlayer) { // Membrul curent
+                    document.getElementById("carti_jucator").appendChild(span);
+                } else { // Membru diferit de cel curent
+                    document.getElementById("carti_intoarse_stanga").appendChild(span.cloneNode(true));
+                    document.getElementById("carti_intoarse_fata").appendChild(span.cloneNode(true));
+                    document.getElementById("carti_intoarse_dreapta").appendChild(span.cloneNode(true));
+                }
+
+                addedMembers.push(vec[x]); // Adaugam membrul in lista de membri adaugati
+            }
         }
-    }
-    xhr.send()
+    };
+
+    xhr.send();
+
 </script>
 <body>
+
 <h1 class="lobby-name">{{.LobbyName}}</h1>
+
+
 <div class="membrii">
     <h2>Membrii</h2>
 </div>
-<div id="container">
-    <div class="chat-input">
-        <input placeholder="Message" type="text" id="message">
-        <button onclick="sendMessage()" class="send-button">Send</button>
+<div id = "container_mare">
+<div id="container_joc" style="display: flex">
+    <div id = "carti_intoarse_stanga">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
     </div>
-    <div id="chat">
+
+    <div id = "carti_intoarse_fata">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+    </div>
+
+    <div id = "carti_intoarse_dreapta">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
+    </div>
+    <div id="carti_jucator" style="" class="carte_de_joc">
+        <img src="../deckOfCards/SVG-cards-1.3/2_of_clubs.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/3_of_clubs.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/4_of_clubs.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/5_of_clubs.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/6_of_clubs.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/7_of_clubs.svg">
+        <img src="../deckOfCards/SVG-cards-1.3/8_of_clubs.svg">
+
+
     </div>
 </div>
+    <div id="container" style="">
+        <div id="chat">
+        </div>
+        <div class="chat-input">
+            <input placeholder="Message" type="text" id="message">
+            <button onclick="sendMessage()" class="send-button">Send</button>
+        </div>
+    </div>
+</div>
+<!--<h1>{{.Username}}</h1>-->
+<div id = "buton_intoarcere_lobbies">
+    <a href="/lobbies">exit lobby</a>
+</div>
+
 </body>
 </html>

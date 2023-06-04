@@ -11,6 +11,7 @@ var Port = 5000
 
 func main() {
 	http.FileServer(http.Dir("style"))
+	http.FileServer(http.Dir("deckOfCards/SVG-cards-1.3"))
 	if err := openDatabase(); err != nil {
 		log.Printf("Error opening database: %v", err)
 	}
@@ -34,6 +35,7 @@ func main() {
 	router.HandleFunc("/register", registerGETHandler).Methods("GET")
 	router.HandleFunc("/logout", logoutHandler).Methods("POST")
 	router.HandleFunc("/style/{filename}", getStyleFile).Methods("GET")
+	router.HandleFunc("/deckOfCards/SVG-cards-1.3/{filename}", getCard).Methods("GET")
 	router.HandleFunc("/addToLobby", addToLobbyHandler).Methods("POST")
 	router.HandleFunc("/removeFromLobby", removeFromLobbyHandler).Methods("POST")
 	router.HandleFunc("/lobbyMembers/{lobbyName}", lobbyMembers).Methods("GET")

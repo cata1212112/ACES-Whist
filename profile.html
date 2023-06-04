@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<link rel="stylesheet" href="./style/profile.css">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -9,9 +10,11 @@
 <body>
     <h2> Hello there, {{.Username}} </h2>
     <form action="/logout" method="post">
-        <button name="foo" value="upvote">Log Out</button>
+        <button class="logout-button" name="foo" value="upvote">Log Out</button>
     </form>
 </body>
 <br>
+<div id = "buton_lobbie">
 <a href="/lobbies">lobbies</a>
+</div>
 </html>

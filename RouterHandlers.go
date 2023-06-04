@@ -330,11 +330,20 @@ func sendMessageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getStyleFile(w http.ResponseWriter, r *http.Request) {
+	println("mergi")
 	vars := mux.Vars(r)
 	filename := vars["filename"]
-
+	println(filename)
 	filePath := "style/" + filename
+	http.ServeFile(w, r, filePath)
+}
 
+func getCard(w http.ResponseWriter, r *http.Request) {
+	println("mergi")
+	vars := mux.Vars(r)
+	filename := vars["filename"]
+	println(filename)
+	filePath := "deckOfCards/SVG-cards-1.3/" + filename
 	http.ServeFile(w, r, filePath)
 }
 

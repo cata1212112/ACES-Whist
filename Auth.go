@@ -1,9 +1,9 @@
 package main
 
 import (
+	"encoding/gob"
 	// "log"
 	"fmt"
-	"encoding/gob"
 	"net/http"
 
 	// "github.com/gorilla/context"
@@ -20,19 +20,22 @@ func cookieStoreInit() {
 }
 
 func authMiddleware(next http.Handler) http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Request URL and METHOD: %s	%s\n", r.URL.String(), r.Method)
-        // Check if user is authenticated
-        if !isAuthenticated(r) && r.URL.String() != "/" && r.URL.String() != "/login" && r.URL.String() != "/register"{
-            http.Error(w, "Unauthorized", http.StatusUnauthorized)
-            return
-        }
-        next.ServeHTTP(w, r)
-    })
+		// Check if user is authenticated
+		if r.URL.String() == "/style/login-template.css" || r.URL.String() == "/style/register-template.css" {
+			next.ServeHTTP(w, r)
+		}
+		if !isAuthenticated(r) && r.URL.String() != "/" && r.URL.String() != "/login" && r.URL.String() != "/register" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func isAuthenticated(r *http.Request) bool {
-    session, _ := store.Get(r, "session-id")
+	session, _ := store.Get(r, "session-id")
 	_, ok := session.Values["username"]
 	return ok
 }
