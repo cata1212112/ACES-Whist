@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/gorilla/mux"
-	"github.com/gorilla/sessions"
 	"html/template"
 	"io"
 	"log"
 	"net/http"
 	"sync"
+
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 )
 
 type PageData struct {
@@ -52,7 +53,7 @@ func removeConnectedClient(token string) {
 }
 
 func renderError(w http.ResponseWriter, err interface{}) {
-	t, _ := template.ParseFiles("error-template.html")
+	t, _ := template.ParseFiles("./pages/error-template.html")
 	data := ErrorPageData{Error: err}
 	t.Execute(w, data)
 }
@@ -63,7 +64,7 @@ func testHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func lobbiesHandler(w http.ResponseWriter, r *http.Request) {
-	t, _ := template.ParseFiles("lobbies.html")
+	t, _ := template.ParseFiles("./pages/lobbies.html")
 	session, _ := store.Get(r, "session-id")
 	if isTokenAlreadyConnected(session.Values["token"].(string)) {
 		w.WriteHeader(http.StatusBadRequest)
@@ -76,10 +77,10 @@ func lobbiesHandler(w http.ResponseWriter, r *http.Request) {
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, "session-id")
 	if _, ok := session.Values["username"]; !ok { // user not logged in
-		t, _ := template.ParseFiles("login-template.html")
+		t, _ := template.ParseFiles("./pages/login-template.html")
 		t.Execute(w, nil)
 	} else {
-		t, _ := template.ParseFiles("profile.html")
+		t, _ := template.ParseFiles("./pages/profile.html")
 		pageData := PageData{Username: session.Values["username"]}
 		t.Execute(w, pageData)
 	}
@@ -88,10 +89,10 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 func registerPOSTHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(32 << 20)
 	var userToCreate UserCreate = UserCreate{
-		username:        r.MultipartForm.Value["username"][0],
-		email:           r.MultipartForm.Value["email"][0],
-		password:        r.MultipartForm.Value["password"][0],
-		confirmPassword: r.MultipartForm.Value["confirm-password"][0],
+		Username:        r.MultipartForm.Value["username"][0],
+		Email:           r.MultipartForm.Value["email"][0],
+		Password:        r.MultipartForm.Value["password"][0],
+		ConfirmPassword: r.MultipartForm.Value["confirm-password"][0],
 	}
 
 	if err := register(&userToCreate); err != http.StatusOK {
@@ -102,7 +103,7 @@ func registerPOSTHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func registerGETHandler(w http.ResponseWriter, r *http.Request) {
-	t, _ := template.ParseFiles("register-template.html")
+	t, _ := template.ParseFiles("./pages/register-template.html")
 	t.Execute(w, nil)
 }
 
@@ -112,8 +113,8 @@ func loginPOSTHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(32 << 20) // this gets the content of the form in form-data format
 	fmt.Println("Form: ", r.MultipartForm)
 	var userToLogin UserLoginRequest = UserLoginRequest{
-		username: r.MultipartForm.Value["username"][0],
-		password: r.MultipartForm.Value["password"][0],
+		Username: r.MultipartForm.Value["username"][0],
+		Password: r.MultipartForm.Value["password"][0],
 	}
 
 	if status := checkLoginOK(&userToLogin); status != http.StatusOK {
@@ -133,8 +134,8 @@ func loginPOSTHandler(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 	}
 
-	session.Values["username"] = userToLogin.username
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sub": userToLogin.username})
+	session.Values["username"] = userToLogin.Username
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"sub": userToLogin.Username})
 	tokenString, errToken := token.SignedString([]byte("da4a14bb-f4d7-4a32-90b3-15fb080d3937"))
 	if errToken != nil {
 		fmt.Println("Erorr generating token", errToken.Error())
@@ -184,7 +185,7 @@ func loginGETHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-	t, _ := template.ParseFiles("login-template.html")
+	t, _ := template.ParseFiles("./pages/login-template.html")
 	if err := t.Execute(w, nil); err != nil {
 		log.Println(err)
 	}
@@ -279,7 +280,7 @@ func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 func lobbyHandler(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	lobbyName := params["lobbyName"]
-	t, _ := template.ParseFiles("lobby.html")
+	t, _ := template.ParseFiles("./pages/lobby.html")
 	session, _ := store.Get(r, "session-id")
 	pageData := LobbyData{Username: session.Values["username"], Token: session.Values["token"], LobbyName: lobbyName}
 	t.Execute(w, pageData)
@@ -404,4 +405,77 @@ func removeFromLobbyHandler(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 	}
+}
+
+func manageFriendsHandler(w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles("./pages/manage_friends.html")
+	t.Execute(w, nil)
+}
+
+func getFriendsHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := store.Get(r, "session-id")
+	if err != nil {
+		renderError(w, http.StatusInternalServerError)
+		return
+	}
+	username := session.Values["username"].(string)
+	friends, err := getFriendsOfUser(User{Username: username})
+	if err != nil {
+		renderError(w, http.StatusInternalServerError)
+		return
+	}
+	responseData, err := json.Marshal(friends)
+	if err != nil {
+		renderError(w, http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(responseData)
+}
+
+func addFriendHandler(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	otherUsername := params["username"]
+	session, err := store.Get(r, "session-id")
+	if err != nil {
+		renderError(w, http.StatusInternalServerError)
+		return
+	}
+	myUsername := session.Values["username"].(string)
+	err = sendFriendRequest(User{Username: myUsername}, User{Username: otherUsername})
+	if err != nil {
+		if err.Error() == "Cannot send friend request to yourself!" {
+			renderError(w, http.StatusForbidden)
+			return
+		} else {
+			renderError(w, http.StatusInternalServerError)
+			return
+		}
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func acceptFriendHandler(w http.ResponseWriter, r *http.Request) {
+	// params := mux.Vars(r)
+	// username := params["username"]
+}
+
+func declineFriendHandler(w http.ResponseWriter, r *http.Request) {
+	// params := mux.Vars(r)
+	// username := params["username"]
+}
+
+func getFriendRequestsHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func removeFriendHandler(w http.ResponseWriter, r *http.Request) {
+	// params := mux.Vars(r)
+	// username := params["username"]
+}
+
+func getUsersNotRelatedToMeHandler(w http.ResponseWriter, r *http.Request) {
+
 }

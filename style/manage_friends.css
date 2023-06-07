@@ -1,0 +1,9 @@
+#container {
+    display:flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+#back_to_profile {
+    margin-left: 10px;
+}

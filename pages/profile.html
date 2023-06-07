@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<link rel="stylesheet" href="../style/profile.css">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Page</title>
+</head>
+<body>
+    <div id="header">
+        <h2> Hello there, {{.Username}} </h2>
+        <form action="/logout" method="post">
+            <button class="logout-button" name="foo" value="upvote">Log Out</button>
+        </form>
+    </div>
+    <br>
+    <button id="buton_lobbie" onclick="window.location.href='/lobbies'">See lobbies</button>
+</body>
+</html>

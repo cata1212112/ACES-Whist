@@ -1,5 +1,11 @@
 <html>
-<link rel="stylesheet" href="./style/lobbies.css">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lobbies</title>
+</head>
+<link rel="stylesheet" href="../style/lobbies.css">
 <script type="text/javascript">
     function createLobby() {
         nume = document.getElementById("nume_lobby").value
@@ -49,20 +55,21 @@
         }
         xhr.send()
     }
-
 </script>
-<div id="container">
-    <h1 class="title">Lobbies</h1>
-    <div class="button-container">
-        <input type="text" placeholder="Lobby name" id="nume_lobby">
-        <button onclick="createLobby()">Create Lobby</button>
+<body>
+    <div id="header">
+        <button class="action_button blueish"id="back_to_profile" onclick="window.location.href='/'">Back to profile</button>
+        <form action="/logout" method="post">
+            <button class="logout-button" name="foo" value="upvote">Log Out</button>
+        </form>
     </div>
-
-<ul id="lobbies" class="lobby-list"></ul>
-</div>
-<div >
-    <form action="/logout" method="post">
-        <button class="logout-button" name="foo" value="upvote">Log Out</button>
-    </form>
-</div>
+    <div id="container">
+        <h1 class="title">Lobbies</h1>
+        <div class="button-container">
+            <input type="text" placeholder="Lobby name" id="nume_lobby">
+            <button onclick="createLobby()">Create Lobby</button>
+        </div>
+        <ul id="lobbies" class="lobby-list"></ul>
+    </div>
+</body>
 </html>

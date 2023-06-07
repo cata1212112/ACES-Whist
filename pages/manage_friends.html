@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Friends</title>
+</head>
+<link rel="stylesheet" href="../style/common_style.css">
+<link rel="stylesheet" href="../style/manage_friends.css">
+<script>
+    window.onload = () => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("GET", 'http://localhost:5000/getFriends')
+        xhr.onload = function() {
+            if(xhr.status == 200) {
+                response = JSON.parse(xhr.response)
+                console.log(response)
+                for(let friend of response) {
+                    p = document.createElement("p")
+                    p.innerHTML = JSON.stringify(friend)
+                    document.getElementById("friends").appendChild(p)
+                }
+            }
+        }
+        xhr.send()
+    }
+</script>
+<body>
+    <div id="header">
+        <button class="action_button blueish" id="back_to_profile" onclick="window.location.href='/'">Back to profile</button>
+        <h1>Manage Your Friends</h1>
+        <form action="/logout" method="post">
+            <button class="logout-button" name="foo" value="upvote">Log Out</button>
+        </form>
+    </div>
+
+    <div id="container">
+        <div id="friends" class="friend_container">
+
+        </div>
+        <div id="pending_friend_requests" class="friend_container">
+            
+        </div>
+        <div id="other_users" class="friend_container">
+
+        </div>
+    </div>
+</body>
+</html>
