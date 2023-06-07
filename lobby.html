@@ -92,6 +92,15 @@
             console.log('unsubscribed');
     })
 
+    function toggleChat() {
+        const chat = document.getElementById("container")
+        if (chat.style.display === "none") {
+            chat.style.display = "flex"
+        } else {
+            chat.style.display = "none"
+        }
+    }
+
     function sendMessage() {
         const message = document.getElementById('message').value;
         if (message.length === 0) {
@@ -101,6 +110,14 @@
         xhr.open('POST', 'http://localhost:5000/send')
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.onload = function () {
+            if (xhr.status === 200) {
+                console.log('Message sent')
+                const messageParagraph = document.createElement("p")
+                messageParagraph.innerHTML = `<span style="font-weight:bold">${document.getElementById("username").innerHTML}</span>: ${message}`
+                document.getElementById("chat").appendChild(messageParagraph)
+            }
+            else console.log('Error')
+
         }
         const data = {user: document.getElementById("username").innerHTML, message:message, channel: document.getElementById("lobby_name").innerHTML}
         xhr.send(JSON.stringify(data))
@@ -157,9 +174,11 @@
 
 </script>
 <body>
-
-<h1 class="lobby-name">{{.LobbyName}}</h1>
-
+<div id="upper-wrapper">
+    <button id="buton_intoarcere_lobbies" class="action_button pinkish" onclick="window.location.href='/lobbies'">Exit lobby</button>
+    <h1 class="lobby-name">{{.LobbyName}} </h1>
+    <button id="toggle_chat" class="action_button blueish" onclick="toggleChat()">Chat</button>
+</div>
 
 <div class="membrii">
     <h2>Membrii</h2>
@@ -210,19 +229,15 @@
 
     </div>
 </div>
-    <div id="container" style="">
-        <div id="chat">
-        </div>
-        <div class="chat-input">
-            <input placeholder="Message" type="text" id="message">
-            <button onclick="sendMessage()" class="send-button">Send</button>
-        </div>
+<div id="container" style="">
+    <div id="chat">
+    </div>
+    <div class="chat-input">
+        <input placeholder="Message" type="text" id="message">
+        <button onclick="sendMessage()" class="send-button">Send</button>
     </div>
 </div>
-<!--<h1>{{.Username}}</h1>-->
-<div id = "buton_intoarcere_lobbies">
-    <a href="/lobbies">exit lobby</a>
 </div>
-
+<!--<h1>{{.Username}}</h1>-->
 </body>
 </html>
