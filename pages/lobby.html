@@ -3,7 +3,9 @@
 <head>
     <link rel="stylesheet" href="../style/lobby.css">
     <meta charset="UTF-8">
+    <title>Lobby {{.LobbyName}}</title>
 </head>
+<link rel="stylesheet" href="../style/common_style.css">
 <script src="https://unpkg.com/centrifuge@3.1.0/dist/centrifuge.js"></script>
 <p id="token_jwt" style="display: none">{{.Token}}</p>
 <p id="lobby_name" style="display: none">{{.LobbyName}}</p>
@@ -53,6 +55,21 @@
         }
         xhr.send()
 
+        const xhr1 = new XMLHttpRequest();
+        xhr1.open("POST", "http://localhost:5000/removeFromLobby")
+        xhr1.setRequestHeader("Content-Type", "application/json");
+        var requestData = JSON.stringify({
+            lobby: document.getElementById("lobby_name").innerHTML,
+            name: document.getElementById("username").innerHTML
+        });
+        xhr1.onload = () => {
+            if (xhr1.status === 200) {
+                alert("Removed from lobby successfully")
+            } else {
+                alert("Error removing from lobby")
+            }
+        }
+        xhr1.send(requestData)
     }
     client.connect();
     const sub = client.newSubscription(document.getElementById("lobby_name").innerHTML)
@@ -79,7 +96,7 @@
     sub.on('publication', function (ctx) {
         rasp = ctx.data
         const message = document.createElement("p")
-        message.innerHTML = `${rasp["user"]}: ${rasp["message"]}`
+        message.innerHTML = `<span style="font-weight:bold;">${rasp["user"]}</span>: ${rasp["message"]}`
         document.getElementById("chat").appendChild(message)
     })
     sub.on('subscribing', function(ctx) {
@@ -109,16 +126,7 @@
         const xhr = new XMLHttpRequest();
         xhr.open('POST', 'http://localhost:5000/send')
         xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.onload = function () {
-            if (xhr.status === 200) {
-                console.log('Message sent')
-                const messageParagraph = document.createElement("p")
-                messageParagraph.innerHTML = `<span style="font-weight:bold">${document.getElementById("username").innerHTML}</span>: ${message}`
-                document.getElementById("chat").appendChild(messageParagraph)
-            }
-            else console.log('Error')
-
-        }
+        xhr.onload = function () {}
         const data = {user: document.getElementById("username").innerHTML, message:message, channel: document.getElementById("lobby_name").innerHTML}
         xhr.send(JSON.stringify(data))
         document.getElementById('message').value = '';
