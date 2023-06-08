@@ -17,6 +17,27 @@
         window.location.replace("/lobby/"+nume)
     }
 
+    function joinLobbyById() {
+        var lobbyName = document.getElementById("lobby_id").value
+        if (lobbyName.length === 0) {
+            return
+        }
+
+        foundLobby = false
+        lobbiesList.forEach(lobbyNameFromList => {
+            if(lobbyNameFromList[0] === lobbyName) {
+                foundLobby = true
+            }
+        })
+
+        if(!foundLobby) {
+            alert("Lobby not found")
+            return
+        }
+
+        window.location.replace("/lobby/"+lobbyName)
+    }
+
     var lobbiesWithFriends = new Map();
     var myFriends = new Set();
     var lobbiesList = []
@@ -111,7 +132,7 @@
         <div id="by_id" class="button-container">
             <h2>Join by ID</h2>
             <input type="text" placeholder="Lobby ID" id="lobby_id" class="custom_text_field">
-            <button class="action_button blueish">Join</button>
+            <button class="action_button blueish" onclick="joinLobbyById()">Join</button>
         </div>
     </div>
 </body>
