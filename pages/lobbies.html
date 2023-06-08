@@ -17,60 +17,102 @@
         window.location.replace("/lobby/"+nume)
     }
 
-    window.onload = function () {
-        const xhr = new XMLHttpRequest();
-        xhr.open("GET", 'http://localhost:5000/getAllLobbies')
-        xhr.onload = function () {
-            if (xhr.status === 200) {
-                var aux = JSON.parse(xhr.response)
-                channels = aux["result"]["channels"]
-                for (const x in channels) {
-                    xhr.open("GET", 'http://localhost:5000/lobbyMembers/' + x)
-                    xhr.onload = function () {
-                        var aux = JSON.parse(xhr.response)
-                        console.log(aux)
-                        const lobby = document.createElement("li")
-                        const button = document.createElement("button")
-                        const textnode = document.createElement("span");
-                        const owner = document.createElement("span");
-                        owner.innerHTML = aux[0]
-                        textnode.innerHTML = 'Owner: ' + x;
-                        lobby.className = "lobby-list-item";
-                        clients = channels[x]["num_clients"]
-                        button.innerHTML = `Join lobby ${clients}/4`
-                        button.addEventListener('click', function () {
-                            window.location.replace("/lobby/"+x)
-                        })
-                        if (clients < 4) {
-                            lobby.appendChild(textnode);
-                            lobby.appendChild(owner);
-                            lobby.appendChild(button)
-                            document.getElementById("lobbies").appendChild(lobby)
-                            console.log(channels)
-                        }
+    var lobbiesWithFriends = new Map();
+    var myFriends = new Set();
+    var lobbiesList = []
 
+    window.onload = function () {
+        const xhr1 = new XMLHttpRequest();
+        xhr1.open("GET", 'http://localhost:5000/getFriends')
+        xhr1.onload = () => {
+            if(xhr1.status == 200) {
+                response = JSON.parse(xhr1.response)
+                response.forEach(friend => {
+                    myFriends.add(friend.username)
+                });
+                console.log("My Friends: ", myFriends)
+
+                const xhr = new XMLHttpRequest();
+                xhr.open("GET", 'http://localhost:5000/getAllLobbies')
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        var aux = JSON.parse(xhr.response)
+                        channels = aux["result"]["channels"]
+                        for (let x in channels) {
+                            console.log("Channel: " + x + " Members: " + channels[x]["num_clients"] + "\n")
+                            const xhr = new XMLHttpRequest();
+                            xhr.open("GET", 'http://localhost:5000/lobbyMembers/' + x, false)
+                            xhr.onload = () => {
+                                if (xhr.status === 200) {
+                                    var aux = JSON.parse(xhr.response)
+                                    console.log(aux)
+                                    let friends = 0
+                                    aux.forEach(member => {
+                                        if (myFriends.has(member)) {
+                                            friends++
+                                        }
+                                    })
+                                    lobbiesList.push([x, [aux, friends]])
+                                }
+                            }
+                            xhr.send()
+                        }
+                        lobbiesList.sort((a, b) => b[1][1] - a[1][1])
+                        console.log("Sorted Lobbies: ", lobbiesList, "\n")
+                        for (let lobbieInfo of lobbiesList) {
+                            var aux = lobbieInfo[1][0]
+                            var x = lobbieInfo[0]
+                            const lobby = document.createElement("li")
+                            const button = document.createElement("button")
+                            const ownerNode = document.createElement("span");
+                            const lobbyName = document.createElement("span");
+                            lobbyName.style.fontWeight = "bold";
+                            lobbyName.innerHTML = x 
+                            ownerNode.innerHTML = 'Owner: ' + aux[0];
+                            lobby.className = "lobby-list-item";
+                            clients = channels[x]["num_clients"]
+                            button.innerHTML = `Join lobby ${clients}/4 ${(lobbieInfo[1][1] > 0)? "(" + lobbieInfo[1][1] + ((lobbieInfo[1][1] == 1)? " friend)" : " friends)") : ""}`
+                            button.addEventListener('click', function () {
+                                window.location.replace("/lobby/"+x)
+                            })
+                            if (clients < 4) {
+                                lobby.appendChild(lobbyName);
+                                lobby.appendChild(ownerNode);
+                                lobby.appendChild(button)
+                                document.getElementById("lobbies").appendChild(lobby)
+                                console.log(channels)
+                            }
+                        }
                     }
-                    xhr.send()
                 }
+                xhr.send()
             }
         }
-        xhr.send()
+        xhr1.send()
     }
 </script>
 <body>
     <div id="header">
         <button class="action_button blueish"id="back_to_profile" onclick="window.location.href='/'">Back to profile</button>
+        <h1 class="title">Lobbies</h1>
         <form action="/logout" method="post">
             <button class="logout-button" name="foo" value="upvote">Log Out</button>
         </form>
     </div>
-    <div id="container">
-        <h1 class="title">Lobbies</h1>
-        <div class="button-container">
-            <input type="text" placeholder="Lobby name" id="nume_lobby">
-            <button onclick="createLobby()">Create Lobby</button>
+    <div id="container_two">
+        <div id="container">
+            <h3>Create or Join Lobby</h3>
+            <div class="button-container">
+                <input type="text" placeholder="Lobby name" id="nume_lobby">
+                <button onclick="createLobby()">Create Lobby</button>
+            </div>
+            <ul id="lobbies" class="lobby-list"></ul>
         </div>
-        <ul id="lobbies" class="lobby-list"></ul>
+        <div id="by_id" class="button-container">
+            <h2>Join by ID</h2>
+            <input type="text" placeholder="Lobby ID" id="lobby_id" class="custom_text_field">
+            <button class="action_button blueish">Join</button>
+        </div>
     </div>
 </body>
 </html>

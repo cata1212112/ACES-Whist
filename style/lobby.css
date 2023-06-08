@@ -146,7 +146,7 @@ body {
 }
 
 .lobby-name::before {
-    content: "Lobby: ";
+    content: "Lobby ID: ";
 }
 
 .dummy {
