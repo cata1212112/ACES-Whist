@@ -23,7 +23,7 @@ func authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Request URL and METHOD: %s	%s\n", r.URL.String(), r.Method)
 		// Check if user is authenticated
-		if r.URL.String() == "../style/login-template.css" || r.URL.String() == "../style/register-template.css" {
+		if r.URL.String() == "/style/login-template.css" || r.URL.String() == "/style/register-template.css" || r.URL.String() == "/style/common_style.css" {
 			next.ServeHTTP(w, r)
 		}
 		if !isAuthenticated(r) && r.URL.String() != "/" && r.URL.String() != "/login" && r.URL.String() != "/register" {

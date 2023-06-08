@@ -335,7 +335,7 @@ func getStyleFile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	filename := vars["filename"]
 	println(filename)
-	filePath := "style/" + filename
+	filePath := "./style/" + filename
 	http.ServeFile(w, r, filePath)
 }
 
@@ -416,17 +416,20 @@ func getFriendsHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "session-id")
 	if err != nil {
 		renderError(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	username := session.Values["username"].(string)
 	friends, err := getFriendsOfUser(User{Username: username})
 	if err != nil {
 		renderError(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	responseData, err := json.Marshal(friends)
 	if err != nil {
 		renderError(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -447,9 +450,11 @@ func addFriendHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err.Error() == "Cannot send friend request to yourself!" {
 			renderError(w, http.StatusForbidden)
+			w.WriteHeader(http.StatusForbidden)
 			return
 		} else {
 			renderError(w, http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	}
@@ -458,24 +463,142 @@ func addFriendHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func acceptFriendHandler(w http.ResponseWriter, r *http.Request) {
-	// params := mux.Vars(r)
-	// username := params["username"]
+	params := mux.Vars(r)
+	otherUsername := params["username"]
+	session, err := store.Get(r, "session-id")
+	if err != nil {
+		renderError(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	myUsername := session.Values["username"].(string)
+	err = acceptFriendRequest(User{Username: myUsername}, User{Username: otherUsername})
+	if err != nil {
+		if err.Error() == "Cannot accept friend request from yourself!" {
+			renderError(w, http.StatusForbidden)
+			w.WriteHeader(http.StatusForbidden)
+		} else if err.Error() == "No friend request to accept!" {
+			renderError(w, http.StatusNotFound)
+			w.WriteHeader(http.StatusNotFound)
+		} else {
+			renderError(w, http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func declineFriendHandler(w http.ResponseWriter, r *http.Request) {
-	// params := mux.Vars(r)
-	// username := params["username"]
+	params := mux.Vars(r)
+	otherUsername := params["username"]
+	session, err := store.Get(r, "session-id")
+	if err != nil {
+		renderError(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	myUsername := session.Values["username"].(string)
+	err = declineFriendRequest(User{Username: myUsername}, User{Username: otherUsername})
+	if err != nil {
+		if err.Error() == "Cannot decline a friend request from yourself!" {
+			renderError(w, http.StatusForbidden)
+			w.WriteHeader(http.StatusForbidden)
+		} else if err.Error() == "No friend request to decline!" {
+			renderError(w, http.StatusNotFound)
+			w.WriteHeader(http.StatusNotFound)
+		} else {
+			renderError(w, http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func getFriendRequestsHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := store.Get(r, "session-id")
+	if err != nil {
+		renderError(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	myUsername := session.Values["username"].(string)
+	friendRequests, err := getFriendRequestsOfUser(User{Username: myUsername})
+	if err != nil {
+		renderError(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
+	if friendRequests == nil {
+		println("friendRequests is nil")
+	}
+	responseData, err := json.Marshal(friendRequests)
+	if err != nil {
+		renderError(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(responseData)
 }
 
 func removeFriendHandler(w http.ResponseWriter, r *http.Request) {
-	// params := mux.Vars(r)
-	// username := params["username"]
+	params := mux.Vars(r)
+	otherUsername := params["username"]
+	session, err := store.Get(r, "session-id")
+	if err != nil {
+		renderError(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	myUsername := session.Values["username"].(string)
+	err = unfriend(User{Username: myUsername}, User{Username: otherUsername})
+	if err != nil {
+		if err.Error() == "Users are not friends!" {
+			renderError(w, http.StatusNotFound)
+			w.WriteHeader(http.StatusNotFound)
+		} else if err.Error() == "Cannot unfriend yourself!" {
+			renderError(w, http.StatusForbidden)
+			w.WriteHeader(http.StatusForbidden)
+		} else {
+			renderError(w, http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func getUsersNotRelatedToMeHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := store.Get(r, "session-id")
+	if err != nil {
+		renderError(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	myUsername := session.Values["username"].(string)
+	users, err := getUsersNotRelatedToMe(User{Username: myUsername})
+	if err != nil {
+		renderError(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
+	responseData, err := json.Marshal(users)
+	if err != nil {
+		renderError(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(responseData)
 }

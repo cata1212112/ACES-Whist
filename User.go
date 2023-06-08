@@ -50,18 +50,18 @@ func getUserByEmail(email string) (*User, error) {
 func getFriendsOfUser(user User) ([]User, error) {
 	var user_id int
 	if err := DB.QueryRow("select id from users where username = $1", user.Username).Scan(&user_id); err != nil {
-		return []User{}, err
+		return make([]User, 0), err
 	}
-	var friends []User
+	friends := make([]User, 0)
 	rows, err := DB.Query("select username from users where id in ((select user_id1 from are_friends where user_id2 = $1 and confirmed_1 and confirmed_2) union (select user_id2 from are_friends where user_id1 = $1 and confirmed_1 and confirmed_2))", user_id)
 	if err != nil {
-		return []User{}, err
+		return make([]User, 0), err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var username string
 		if err := rows.Scan(&username); err != nil {
-			return []User{}, err
+			return make([]User, 0), err
 		}
 		friends = append(friends, User{Username: username})
 	}
@@ -72,18 +72,18 @@ func getFriendsOfUser(user User) ([]User, error) {
 func getFriendRequestsOfUser(user User) ([]User, error) {
 	var user_id int
 	if err := DB.QueryRow("select id from users where username = $1", user.Username).Scan(&user_id); err != nil {
-		return []User{}, err
+		return make([]User, 0), err
 	}
-	var friend_requests []User
+	friend_requests := make([]User, 0)
 	rows, err := DB.Query("select username from users where id in ((select user_id1 from are_friends where user_id2 = $1 and confirmed_1 and not confirmed_2) union (select user_id2 from are_friends where user_id1 = $1 and not confirmed_1 and confirmed_2))", user_id)
 	if err != nil {
-		return []User{}, err
+		return make([]User, 0), err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var username string
 		if err := rows.Scan(&username); err != nil {
-			return []User{}, err
+			return make([]User, 0), err
 		}
 		friend_requests = append(friend_requests, User{Username: username})
 	}
@@ -93,19 +93,22 @@ func getFriendRequestsOfUser(user User) ([]User, error) {
 func getUsersNotRelatedToMe(user User) ([]User, error) {
 	var user_id int
 	if err := DB.QueryRow("select id from users where username = $1", user.Username).Scan(&user_id); err != nil {
-		return []User{}, err
+		return make([]User, 0), err
 	}
 
-	var usersNotRelated []User
+	usersNotRelated := make([]User, 0)
 	rows, err := DB.Query("select username from users where id not in (select user_id1 from are_friends where user_id2 = $1 union select user_id2 from are_friends where user_id1 = $1)", user_id)
 	if err != nil {
-		return []User{}, err
+		return make([]User, 0), err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var username string
 		if err := rows.Scan(&username); err != nil {
-			return []User{}, err
+			return make([]User, 0), err
+		}
+		if username == user.Username {
+			continue
 		}
 		usersNotRelated = append(usersNotRelated, User{Username: username})
 	}
@@ -185,7 +188,7 @@ func acceptFriendRequest(accepter User, other User) error {
 	return nil
 }
 
-func rejectFriendRequest(rejecter User, other User) error {
+func declineFriendRequest(rejecter User, other User) error {
 	var rejecter_id int
 	var other_id int
 
@@ -198,7 +201,7 @@ func rejectFriendRequest(rejecter User, other User) error {
 	}
 
 	if rejecter_id == other_id {
-		return errors.New("Cannot reject a friend request from yourself!")
+		return errors.New("Cannot decline a friend request from yourself!")
 	}
 
 	result, err := DB.Exec("delete from are_friends where (user_id1, userid_2) = ($1, $2) or (user_id1, userid_2) = ($2, $1)", other_id, rejecter_id)
@@ -211,7 +214,7 @@ func rejectFriendRequest(rejecter User, other User) error {
 		return err
 	}
 	if affected_rows == 0 {
-		return errors.New("No friend request to reject!")
+		return errors.New("No friend request to decline!")
 	}
 	return nil
 }

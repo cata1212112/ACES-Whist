@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <link rel="stylesheet" href="../style/profile.css">
+<link rel="stylesheet" href="../style/common_style.css">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -15,6 +16,9 @@
         </form>
     </div>
     <br>
-    <button id="buton_lobbie" onclick="window.location.href='/lobbies'">See lobbies</button>
+    <div id="options">
+        <button id="buton_lobbie" onclick="window.location.href='/lobbies'" class="action_button blueish">See lobbies</button>
+        <button id="buton_friends" onclick="window.location.href='/manageFriends'" class="action_button blueish">Manage friends</button>
+    </div>
 </body>
 </html>

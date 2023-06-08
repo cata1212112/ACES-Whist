@@ -3,7 +3,7 @@ body {
     background: linear-gradient( to left, #ffcccc, #66ccff);
 }
 
-#buton_lobbie {
+/* #buton_lobbie {
     margin-top: 20px;
     text-align: center;
     padding: 10px 20px;
@@ -11,7 +11,7 @@ body {
     color: #fff;
     border-radius: 4px;
     font-size: 16px;
-}
+} */
 
 #buton_lobbie:hover {
     background-color: #0056b3;
@@ -40,4 +40,11 @@ form {
 
 .logout-button:hover {
     background-color: #c82333;
+}
+
+#options {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
 }
