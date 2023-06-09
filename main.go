@@ -47,6 +47,9 @@ func main() {
 	router.HandleFunc("/getFriendRequests", getFriendRequestsHandler).Methods("GET")
 	router.HandleFunc("/removeFriend/{username}", removeFriendHandler).Methods("POST")
 	router.HandleFunc("/getUsersNotRelatedToMe", getUsersNotRelatedToMeHandler).Methods("GET")
+	router.HandleFunc("/getAllUsersWithScore", getUsersWithScoreHandler).Methods("GET")
+	router.HandleFunc("/getMyScore", getMyScoreHandler).Methods("GET")
+	router.HandleFunc("/leaderboard", leaderboardHandler).Methods("GET")
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		renderError(w, http.StatusNotFound)

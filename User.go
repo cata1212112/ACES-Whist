@@ -24,6 +24,14 @@ type UserCreate struct {
 	ConfirmPassword string `json:"confirmPassword"`
 }
 
+type UserWithScore struct {
+	Username  string `json:"username"`
+	Rating    int    `json:"rating"`
+	GamesWon  int    `json:"gamesWon"`
+	GamesLost int    `json:"gamesLost"`
+}
+
+// In momentul in care se creeaza un user, va fi initiat si scorul acestuia cu valori nule (rating, games_won, games_lost)
 func createUser(user *UserCreate) error {
 	if err := DB.QueryRow("INSERT INTO users (username, email, password) VALUES ($1, $2, $3)", user.Username, user.Email, user.Password).Err(); err != nil {
 		return err
@@ -249,8 +257,74 @@ func unfriend(user1 User, user2 User) error {
 	return nil
 }
 
+func getAllUsersWithScoresDescending() ([]UserWithScore, error) {
+	usersWithScore := make([]UserWithScore, 0)
+	rows, err := DB.Query("select username, games_won, games_lost, rating from users u join scores s on u.id = s.user_id order by rating desc;")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var username string
+		var games_won int
+		var games_lost int
+		var rating int
+		if err := rows.Scan(&username, &games_won, &games_lost, &rating); err != nil {
+			return nil, err
+		}
+		usersWithScore = append(usersWithScore, UserWithScore{Username: username, GamesWon: games_won, GamesLost: games_lost, Rating: rating})
+	}
+
+	return usersWithScore, nil
+}
+
+func getScoreInfoOfUser(user User) (UserWithScore, error) {
+	var username string
+	var games_won int
+	var games_lost int
+	var rating int
+	if err := DB.QueryRow("select username, games_won, games_lost, rating from users u join scores s on u.id = s.user_id where username = $1;", user.Username).Scan(&username, &games_won, &games_lost, &rating); err != nil {
+		return UserWithScore{}, err
+	}
+	return UserWithScore{Username: username, GamesWon: games_won, GamesLost: games_lost, Rating: rating}, nil
+}
+
+// NU este nevoie de o functie care sa actualizeze rating-ul unui jucator; acesta se actualizeaza automat la cresterea numarului de
+// jocuri castigate sau pierdute dupa formula: RATING = 10*GAMES_WON - 3*GAMES_LOST
+func incrNumberOfGamesWon(user User) error {
+	result, err := DB.Exec("update scores set games_won = games_won + 1 where user_id = (select id from users where username = $1);", user.Username)
+	if err != nil {
+		return err
+	}
+	affected_rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if affected_rows == 0 {
+		return errors.New("No row updated!")
+	}
+
+	return nil
+}
+
+func incrNumberOfGamesLost(user User) error {
+	result, err := DB.Exec("update scores set games_lost = games_lost + 1 where user_id = (select id from users where username = $1);", user.Username)
+	if err != nil {
+		return err
+	}
+	affected_rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if affected_rows == 0 {
+		return errors.New("No row updated!")
+	}
+
+	return nil
+}
+
 // Test function for user creation
-func testUserCreate() { // modify to test the create of other users
+func testUserCreate() { // modify to test the creation of other users
 	testUser := UserCreate{
 		Email:           "email@gmail.com",
 		Username:        "username",

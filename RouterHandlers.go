@@ -602,3 +602,55 @@ func getUsersNotRelatedToMeHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(responseData)
 }
+
+func getUsersWithScoreHandler(w http.ResponseWriter, r *http.Request) {
+	result, err := getAllUsersWithScoresDescending()
+	if err != nil {
+		renderError(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	responseData, err := json.Marshal(result)
+	if err != nil {
+		renderError(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(responseData)
+}
+
+func getMyScoreHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := store.Get(r, "session-id")
+	if err != nil {
+		renderError(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	myUsername := session.Values["username"].(string)
+	resultUserWithScore, err := getScoreInfoOfUser(User{Username: myUsername})
+	if err != nil {
+		renderError(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	responseData, err := json.Marshal(resultUserWithScore)
+	if err != nil {
+		renderError(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(responseData)
+}
+
+func leaderboardHandler(w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles("./pages/leaderboard.html")
+	t.Execute(w, nil)
+}
