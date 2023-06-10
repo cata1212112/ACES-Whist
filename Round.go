@@ -10,26 +10,27 @@ type Round struct {
 	first     Card
 }
 
-func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int) {
+func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, gameID string) {
 	round.sumOfBids = 0
 	round.trump.value = -1
 	round.first.value = -1
 
 	for i := 0; i < 4; i++ {
-		(*players)[i].giveCards(deck.giveCards(numberOfCards))
+		(*players)[i].GiveCards(deck.GiveCards(numberOfCards))
 	}
 
 	if numberOfCards < 8 {
-		round.trump = deck.giveCards(1)[0]
+		round.trump = deck.GiveCards(1)[0]
 	}
 	sum := 0
 
 	for i := 0; i < 3; i++ {
-		(*players)[i].makeBid(false, 0, numberOfCards)
+		(*players)[i].makeBid(false, 0, numberOfCards, gameID)
+
 		(*players)[i].tricks = 0
 		sum += (*players)[i].getBid()
 	}
-	(*players)[3].makeBid(true, sum, numberOfCards)
+	(*players)[3].makeBid(true, sum, numberOfCards, gameID)
 	(*players)[3].tricks = 0
 	isFirst := 1
 	for i := 0; i < numberOfCards; i++ {
@@ -57,7 +58,7 @@ func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int) 
 			} else {
 				trumpCard = &round.trump
 			}
-			if isFirst == 0 && played.compare(winningCard, trumpCard, round.first) {
+			if isFirst == 0 && played.Compare(winningCard, trumpCard, round.first) {
 				winningCard = played
 				winningPlayer = &(*players)[i]
 			}

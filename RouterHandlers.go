@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 	"sync"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -29,6 +30,16 @@ type LobbyData struct {
 type ErrorPageData struct {
 	Error interface{}
 }
+
+type PlayerInput struct {
+	GameID string
+	Player Player
+}
+
+var (
+	gameMap   = make(map[string]chan PlayerInput)
+	gameMapMu sync.RWMutex
+)
 
 var connectedClients = make(map[string]bool)
 var lobbies = make(map[string][]string)
@@ -66,10 +77,6 @@ func testHandler(w http.ResponseWriter, r *http.Request) {
 func lobbiesHandler(w http.ResponseWriter, r *http.Request) {
 	t, _ := template.ParseFiles("./pages/lobbies.html")
 	session, _ := store.Get(r, "session-id")
-	if isTokenAlreadyConnected(session.Values["token"].(string)) {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
 	pageData := PageData{Username: session.Values["username"], Token: session.Values["token"]}
 	t.Execute(w, pageData)
 }
@@ -282,6 +289,10 @@ func lobbyHandler(w http.ResponseWriter, r *http.Request) {
 	lobbyName := params["lobbyName"]
 	t, _ := template.ParseFiles("./pages/lobby.html")
 	session, _ := store.Get(r, "session-id")
+	if isTokenAlreadyConnected(session.Values["token"].(string)) {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	pageData := LobbyData{Username: session.Values["username"], Token: session.Values["token"], LobbyName: lobbyName}
 	t.Execute(w, pageData)
 }
@@ -307,6 +318,7 @@ func sendMessageHandler(w http.ResponseWriter, r *http.Request) {
 			"data": map[string]interface{}{
 				"user":    data.User,
 				"message": data.Message,
+				"flag":    'c',
 			},
 		},
 	}
@@ -363,6 +375,98 @@ func addToLobbyHandler(w http.ResponseWriter, r *http.Request) {
 		lobbies[lobby] = make([]string, 0)
 	}
 	lobbies[lobby] = append(lobbies[lobby], requestData.Name)
+
+	if len(lobbies[lobby]) == 4 {
+		var game = newGame()
+		game.name = lobby
+
+		var player1 Player
+		var player2 Player
+		var player3 Player
+		var player4 Player
+
+		player1.setName(lobbies[lobby][0])
+		player2.setName(lobbies[lobby][1])
+		player3.setName(lobbies[lobby][2])
+		player4.setName(lobbies[lobby][3])
+
+		game.addPlayer(player1)
+		game.addPlayer(player2)
+		game.addPlayer(player3)
+		game.addPlayer(player4)
+
+		gameChannel := make(chan PlayerInput)
+		gameMapMu.Lock()
+		gameMap[game.name] = gameChannel
+		gameMapMu.Unlock()
+		go game.play()
+	}
+
+	command := map[string]interface{}{
+		"method": "publish",
+		"params": map[string]interface{}{
+			"channel": requestData.Lobby,
+			"data": map[string]interface{}{
+				"user": requestData.Name,
+				"flag": 'm',
+			},
+		},
+	}
+
+	dataA, err := json.Marshal(command)
+	if err != nil {
+		panic(err)
+	}
+	req, err := http.NewRequest("POST", "http://localhost:8000/api", bytes.NewBuffer(dataA))
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "apikey a3d9c270-52df-45f8-9a66-a1bb8e9e04ce")
+	client := http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+}
+
+func getPlayerBid(w http.ResponseWriter, r *http.Request) {
+	var requestData struct {
+		Bid   string `json:"bid"`
+		Lobby string `json:"lobby"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&requestData)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	lobby := requestData.Lobby
+	bid, _ := strconv.ParseInt(requestData.Bid, 10, 32)
+	fmt.Println("am facut bid")
+	fmt.Println(bid, lobby)
+	session, err := store.Get(r, "session-id")
+	if err != nil {
+		renderError(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	myUsername := session.Values["username"].(string)
+
+	playerInput := PlayerInput{
+		GameID: lobby,
+		Player: Player{
+			name: myUsername,
+			bid:  int(bid),
+		},
+	}
+	fmt.Println(lobby, myUsername, bid)
+	gameChannel := make(chan PlayerInput)
+	gameMapMu.RLock()
+	gameChannel = gameMap[lobby]
+	gameMapMu.RUnlock()
+	gameChannel <- playerInput
 }
 
 func lobbyMembers(w http.ResponseWriter, r *http.Request) {
@@ -405,6 +509,34 @@ func removeFromLobbyHandler(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 	}
+
+	command := map[string]interface{}{
+		"method": "publish",
+		"params": map[string]interface{}{
+			"channel": requestData.Lobby,
+			"data": map[string]interface{}{
+				"user": requestData.Name,
+				"flag": "dm",
+			},
+		},
+	}
+
+	dataA, err := json.Marshal(command)
+	if err != nil {
+		panic(err)
+	}
+	req, err := http.NewRequest("POST", "http://localhost:8000/api", bytes.NewBuffer(dataA))
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "apikey a3d9c270-52df-45f8-9a66-a1bb8e9e04ce")
+	client := http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
 }
 
 func manageFriendsHandler(w http.ResponseWriter, r *http.Request) {

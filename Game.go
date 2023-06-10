@@ -14,12 +14,13 @@ type Game struct {
 	numberOfCards []int
 	deckOfCards   Deck
 	players       []Player
+	name          string
 }
 
 func newGame() *Game {
 	game := new(Game)
 	game.numberOfCards = []int{8, 8, 8, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 2, 3, 4, 5, 6, 7, 8, 8, 8, 8}
-	game.deckOfCards = *newDeck()
+	game.deckOfCards = *NewDeck()
 	return game
 }
 
@@ -34,11 +35,10 @@ func (game *Game) play() {
 		}
 		round := new(Round)
 		game.deckOfCards.index = 0
-		game.deckOfCards.shuffleDeck()
-		round.playRound(&game.players, &game.deckOfCards, elem)
+		game.deckOfCards.ShuffleDeck()
+		round.playRound(&game.players, &game.deckOfCards, elem, game.name)
 	}
 	for j := 0; j < 4; j++ {
 		fmt.Println(game.players[j].score)
 	}
-
 }

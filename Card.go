@@ -25,24 +25,35 @@ type Card struct {
 	value int
 }
 
-func (card *Card) compare(winningCard Card, trump *Card, first Card) bool {
+func NewCard(suite suites, value int) *Card {
+	return &Card{
+		suite: suite,
+		value: value,
+	}
+}
+
+func (card *Card) Compare(winningCard Card, trump *Card, first Card) bool {
 	if trump != nil && card.suite != trump.suite && card.suite != first.suite {
 		return false
 	}
 	if card.suite == winningCard.suite {
 		return card.value > winningCard.value
 	}
-	if card.suite == first.suite && winningCard.suite == trump.suite {
+	if trump != nil && card.suite == first.suite && winningCard.suite == trump.suite {
 		return false
 	}
-	if winningCard.suite == first.suite && card.suite == trump.suite {
+	if trump != nil && winningCard.suite == first.suite && card.suite == trump.suite {
 		return true
 	}
-	return true
+	return false
 }
 
-func (card *Card) equals(otherCard Card) bool {
+func (card *Card) Equals(otherCard Card) bool {
 	return card.suite == otherCard.suite
+}
+
+func (card *Card) String() string {
+	return fmt.Sprintf("Suite: %d, Value: %d", card.suite, card.value)
 }
 
 func (card *Card) showCard() { // nu avem nevoie de functia asta

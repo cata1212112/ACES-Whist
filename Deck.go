@@ -26,7 +26,7 @@ type Deck struct {
 	index int
 }
 
-func newDeck() *Deck {
+func NewDeck() *Deck {
 	deck := new(Deck)
 	deck.index = 0
 	for i := 7; i < 11; i++ {
@@ -50,13 +50,13 @@ func newDeck() *Deck {
 	return deck
 }
 
-func (deck *Deck) shuffleDeck() {
+func (deck *Deck) ShuffleDeck() {
 	sort.Slice(deck.cards, func(i, j int) bool {
 		return rand.Intn(1000) < rand.Intn(1000)
 	})
 }
 
-func (deck *Deck) giveCards(i int) []Card {
+func (deck *Deck) GiveCards(i int) []Card {
 	/// nu cred ca vom avea nevoie de mai multe carti cat sunt in pachet decat daca e un bug
 
 	if i > deckSize-deck.index+1 {
@@ -66,4 +66,13 @@ func (deck *Deck) giveCards(i int) []Card {
 	copy(aux, deck.cards[deck.index:deck.index+i])
 	deck.index += i
 	return aux
+}
+
+func (deck *Deck) Equals(otherDeck Deck) bool {
+	for i, c := range deck.cards {
+		if c.suite != otherDeck.cards[i].suite && c.value != otherDeck.cards[i].value {
+			return false
+		}
+	}
+	return true
 }

@@ -73,37 +73,106 @@
     }
     client.connect();
     const sub = client.newSubscription(document.getElementById("lobby_name").innerHTML)
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", 'http://localhost:5000/addToLobby')
-    xhr.setRequestHeader("Content-Type", "application/json");
-    var requestData = JSON.stringify({
-        lobby: document.getElementById("lobby_name").innerHTML,
-        name: document.getElementById("username").innerHTML
-    });
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-            if (xhr.status === 200) {
-                console.log("Name added to the lobby successfully");
-
-
-            } else {
-                console.error("Error:", xhr.status, xhr.statusText);
-            }
-        }
-    };
-    xhr.send(requestData);
     sub.subscribe();
     sub.on('publication', function (ctx) {
         rasp = ctx.data
-        const message = document.createElement("p")
-        message.innerHTML = `<span style="font-weight:bold;">${rasp["user"]}</span>: ${rasp["message"]}`
-        document.getElementById("chat").appendChild(message)
+        console.log(rasp)
+        if (rasp["flag"] === 99) {
+            console.log("am primit")
+            console.log(rasp)
+            const message = document.createElement("p")
+            message.innerHTML = `<span style="font-weight:bold;">${rasp["user"]}</span>: ${rasp["message"]}`
+            document.getElementById("chat").appendChild(message)
+        }
+        if (rasp["flag"] === 109) {
+            console.log("am primit")
+            console.log(rasp)
+            text = document.createElement('p')
+            text.innerHTML = rasp["user"]
+            document.getElementsByClassName("membrii")[0].appendChild(text)
+        }
+        console.log(rasp["flag"])
+        if (rasp["flag"] === "dm") {
+            membrii = document.getElementsByClassName("membrii")[0]
+            for (const child of membrii.children) {
+                if (child.tagName === "P" && child.innerHTML === rasp["user"]) {
+                    console.log(child)
+                    membrii.removeChild(child)
+                    break
+                }
+            }
+        }
+        if (rasp["flag"] === "requestBid") {
+            user = document.getElementById("username").innerHTML
+            if (user === rasp["user"]) {
+                document.getElementById("bid_wrapper").style.display = "grid";
+
+                document.getElementById("bid_button").addEventListener("click", () => {
+                    document.getElementById("bid_wrapper").style.display = "none";
+                    // trimite la server valoara din
+
+                    bid = document.getElementById("bid_input").value
+                    console.log(bid)
+                    if (bid !== "") {
+                        const xhr1 = new XMLHttpRequest();
+                        xhr1.open("POST", "http://localhost:5000/makeBid")
+                        xhr1.setRequestHeader("Content-Type", "application/json");
+                        var requestData = JSON.stringify({
+                            "bid": bid,
+                            "lobby": document.getElementById("lobby_name").innerHTML
+                        });
+                        xhr1.onload = () => {
+                            if (xhr1.status === 200) {
+                                console.log("OK")
+                            } else {
+                                console.log("Error")
+                            }
+                        }
+                        xhr1.send(requestData)
+                    }
+                })
+            }
+        }
     })
     sub.on('subscribing', function(ctx) {
             console.log('subscribing');
     })
     sub.on('subscribed', function(ctx) {
-            console.log('subscribed');
+        console.log('subscribed');
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", 'http://localhost:5000/addToLobby', false)
+        xhr.setRequestHeader("Content-Type", "application/json");
+        var requestData = JSON.stringify({
+            lobby: document.getElementById("lobby_name").innerHTML,
+            name: document.getElementById("username").innerHTML
+        });
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    console.log("Name added to the lobby successfully");
+                    const xhr1 = new XMLHttpRequest();
+                    xhr1.open("GET", 'http://localhost:5000/lobbyMembers/' + document.getElementById("lobby_name").innerHTML);
+                    xhr1.onload = function () {
+                        console.log(xhr1.response);
+                        var vec = JSON.parse(xhr1.response);
+                        var currentPlayer = document.getElementById("username").innerHTML; // Numele jucatorului curent
+
+                        for (x in vec) {
+                            if (vec[x] !== currentPlayer) {
+                                text = document.createElement('p')
+                                text.innerHTML = vec[x]
+                                document.getElementsByClassName("membrii")[0].appendChild(text)
+                            }
+                        }
+                    };
+
+                    xhr1.send();
+                } else {
+                    console.error("Error:", xhr.status, xhr.statusText);
+                }
+            }
+        };
+        xhr.send(requestData);
     })
     sub.on('unsubscribed', function(ctx) {
             console.log('unsubscribed');
@@ -131,57 +200,13 @@
         xhr.send(JSON.stringify(data))
         document.getElementById('message').value = '';
     }
-    // xhr.open("GET", 'http://localhost:5000/lobbyMembers/' + document.getElementById("lobby_name").innerHTML)
-    // xhr.onload = function () {
-    //     console.log(xhr.response)
-    //     vec = JSON.parse(xhr.response)
-    //     console.log(vec)
-    //     var addedMembers = []; // Variabila pentru a tine evidenta membrilor adaugati
-    //     for (x in vec) {
-    //         console.log(vec[x])
-    //         if (!addedMembers.includes(vec[x])) { // Verificam daca membrul exista deja in lista
-    //             console.log(vec[x])
-    //             var span = document.createElement("span");
-    //             span.innerHTML = vec[x];
-    //             document.getElementsByClassName("membrii")[0].appendChild(span);
-    //             addedMembers.push(vec[x]); // Adaugam membrul in lista de membri adaugati
-    //         }
-    //     }
-    // }
-    //
-    // xhr.send()
-    xhr.open("GET", 'http://localhost:5000/lobbyMembers/' + document.getElementById("lobby_name").innerHTML);
-    xhr.onload = function () {
-        console.log(xhr.response);
-        var vec = JSON.parse(xhr.response);
-        console.log(vec);
-        var addedMembers = []; // Variabila pentru a tine evidenta membrilor adaugati
-        var currentPlayer = document.getElementById("lobby_name").innerHTML; // Numele jucatorului curent
-
-        for (x in vec) {
-            console.log(vec[x]);
-            if (!addedMembers.includes(vec[x])) { // Verificam daca membrul exista deja in lista
-                console.log(vec[x]);
-                var span = document.createElement("span");
-                span.innerHTML = vec[x];
-
-                if (vec[x] === currentPlayer) { // Membrul curent
-                    document.getElementById("carti_jucator").appendChild(span);
-                } else { // Membru diferit de cel curent
-                    document.getElementById("carti_intoarse_stanga").appendChild(span.cloneNode(true));
-                    document.getElementById("carti_intoarse_fata").appendChild(span.cloneNode(true));
-                    document.getElementById("carti_intoarse_dreapta").appendChild(span.cloneNode(true));
-                }
-
-                addedMembers.push(vec[x]); // Adaugam membrul in lista de membri adaugati
-            }
-        }
-    };
-
-    xhr.send();
 
 </script>
 <body>
+<div id="bid_wrapper">
+    <input type="text" id="bid_input" placeholder="Enter your bid here">
+    <button id="bid_button" class="action_button blueish">Place bid</button>
+</div>
 <div id="upper-wrapper">
     <button id="buton_intoarcere_lobbies" class="action_button pinkish" onclick="window.location.href='/lobbies'">Exit lobby</button>
     <h1 class="lobby-name">{{.LobbyName}} </h1>

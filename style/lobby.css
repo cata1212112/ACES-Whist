@@ -281,3 +281,23 @@ body {
     color: #ffffff;
     text-decoration: none;
 }
+
+#bid_wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+    align-content: center;
+    justify-items: center;
+    width: 250px;
+    height: 150px;
+    border-radius: 10px;
+    border: 2px solid darkgrey;
+    gap: 10px;
+    z-index: 100;
+}
+
+#bid_button {
+    max-width: 100px;
+}
