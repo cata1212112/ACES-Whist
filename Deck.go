@@ -31,21 +31,21 @@ func NewDeck() *Deck {
 	deck.index = 0
 	for i := 7; i < 11; i++ {
 		for _, s := range []suites{HEARTS, SPADES, DIAMONDS, CLUBS} {
-			deck.cards = append(deck.cards, Card{value: i, suite: s})
+			deck.cards = append(deck.cards, Card{Value: i, Suite: s})
 		}
 	}
 
 	for _, s := range []suites{HEARTS, SPADES, DIAMONDS, CLUBS} {
-		deck.cards = append(deck.cards, Card{value: J, suite: s})
+		deck.cards = append(deck.cards, Card{Value: J, Suite: s})
 	}
 	for _, s := range []suites{HEARTS, SPADES, DIAMONDS, CLUBS} {
-		deck.cards = append(deck.cards, Card{value: Q, suite: s})
+		deck.cards = append(deck.cards, Card{Value: Q, Suite: s})
 	}
 	for _, s := range []suites{HEARTS, SPADES, DIAMONDS, CLUBS} {
-		deck.cards = append(deck.cards, Card{value: K, suite: s})
+		deck.cards = append(deck.cards, Card{Value: K, Suite: s})
 	}
 	for _, s := range []suites{HEARTS, SPADES, DIAMONDS, CLUBS} {
-		deck.cards = append(deck.cards, Card{value: A, suite: s})
+		deck.cards = append(deck.cards, Card{Value: A, Suite: s})
 	}
 	return deck
 }
@@ -70,7 +70,7 @@ func (deck *Deck) GiveCards(i int) []Card {
 
 func (deck *Deck) Equals(otherDeck Deck) bool {
 	for i, c := range deck.cards {
-		if c.suite != otherDeck.cards[i].suite && c.value != otherDeck.cards[i].value {
+		if c.Suite != otherDeck.cards[i].Suite && c.Value != otherDeck.cards[i].Value {
 			return false
 		}
 	}

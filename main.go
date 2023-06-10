@@ -51,6 +51,7 @@ func main() {
 	router.HandleFunc("/getMyScore", getMyScoreHandler).Methods("GET")
 	router.HandleFunc("/leaderboard", leaderboardHandler).Methods("GET")
 	router.HandleFunc("/makeBid", getPlayerBid).Methods("POST")
+	router.HandleFunc("/playCard", getPlayedCard).Methods("POST")
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		renderError(w, http.StatusNotFound)

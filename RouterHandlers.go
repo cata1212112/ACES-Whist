@@ -32,8 +32,9 @@ type ErrorPageData struct {
 }
 
 type PlayerInput struct {
-	GameID string
-	Player Player
+	GameID     string
+	Player     Player
+	playedCard Card
 }
 
 var (
@@ -457,11 +458,49 @@ func getPlayerBid(w http.ResponseWriter, r *http.Request) {
 	playerInput := PlayerInput{
 		GameID: lobby,
 		Player: Player{
-			name: myUsername,
+			Name: myUsername,
 			bid:  int(bid),
 		},
 	}
 	fmt.Println(lobby, myUsername, bid)
+	gameChannel := make(chan PlayerInput)
+	gameMapMu.RLock()
+	gameChannel = gameMap[lobby]
+	gameMapMu.RUnlock()
+	gameChannel <- playerInput
+}
+
+func getPlayedCard(w http.ResponseWriter, r *http.Request) {
+	var requestData struct {
+		Value string `json:"value"`
+		Suite string `json:"suite"`
+		Lobby string `json:"lobby"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&requestData)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	lobby := requestData.Lobby
+	value, _ := strconv.ParseInt(requestData.Value, 10, 32)
+	suite, _ := strconv.ParseInt(requestData.Suite, 10, 32)
+	fmt.Println(value, suite, lobby)
+	session, err := store.Get(r, "session-id")
+	if err != nil {
+		renderError(w, http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	myUsername := session.Values["username"].(string)
+
+	/// gameid, value, suite
+	playerInput := PlayerInput{
+		GameID: lobby,
+		Player: Player{
+			Name: myUsername,
+		},
+		playedCard: *NewCard(suites(suite), int(value)),
+	}
 	gameChannel := make(chan PlayerInput)
 	gameMapMu.RLock()
 	gameChannel = gameMap[lobby]

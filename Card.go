@@ -21,41 +21,41 @@ const (
 )
 
 type Card struct {
-	suite suites
-	value int
+	Suite suites `json:"suite"`
+	Value int    `json:"value"`
 }
 
 func NewCard(suite suites, value int) *Card {
 	return &Card{
-		suite: suite,
-		value: value,
+		Suite: suite,
+		Value: value,
 	}
 }
 
 func (card *Card) Compare(winningCard Card, trump *Card, first Card) bool {
-	if trump != nil && card.suite != trump.suite && card.suite != first.suite {
+	if trump != nil && card.Suite != trump.Suite && card.Suite != first.Suite {
 		return false
 	}
-	if card.suite == winningCard.suite {
-		return card.value > winningCard.value
+	if card.Suite == winningCard.Suite {
+		return card.Value > winningCard.Value
 	}
-	if trump != nil && card.suite == first.suite && winningCard.suite == trump.suite {
+	if trump != nil && card.Suite == first.Suite && winningCard.Suite == trump.Suite {
 		return false
 	}
-	if trump != nil && winningCard.suite == first.suite && card.suite == trump.suite {
+	if trump != nil && winningCard.Suite == first.Suite && card.Suite == trump.Suite {
 		return true
 	}
 	return false
 }
 
 func (card *Card) Equals(otherCard Card) bool {
-	return card.suite == otherCard.suite
+	return card.Suite == otherCard.Suite
 }
 
 func (card *Card) String() string {
-	return fmt.Sprintf("Suite: %d, Value: %d", card.suite, card.value)
+	return fmt.Sprintf("Suite: %d, Value: %d", card.Suite, card.Value)
 }
 
 func (card *Card) showCard() { // nu avem nevoie de functia asta
-	fmt.Printf("%d %d\n", card.suite, card.value)
+	fmt.Printf("%d %d\n", card.Suite, card.Value)
 }

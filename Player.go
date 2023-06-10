@@ -1,13 +1,11 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
 )
 
 //Player
@@ -27,15 +25,15 @@ import (
 //		requests the player to play a card
 
 type Player struct {
-	name   string
+	Name   string `json:"name"`
 	bid    int
-	score  int
+	Score  int `json:"score"`
 	cards  []Card
 	tricks int
 }
 
 func (player *Player) setName(name string) {
-	player.name = name
+	player.Name = name
 }
 
 func (player *Player) getBid() int {
@@ -43,7 +41,7 @@ func (player *Player) getBid() int {
 }
 
 func (player *Player) addScore(x int) {
-	player.score += x
+	player.Score += x
 }
 
 func (player *Player) makeBid(isLast bool, sumBids int, numberOfCards int, gameID string) {
@@ -57,7 +55,7 @@ func (player *Player) makeBid(isLast bool, sumBids int, numberOfCards int, gameI
 			"params": map[string]interface{}{
 				"channel": gameID,
 				"data": map[string]interface{}{
-					"user": player.name,
+					"user": player.Name,
 					"flag": "requestBid",
 				},
 			},
@@ -80,7 +78,7 @@ func (player *Player) makeBid(isLast bool, sumBids int, numberOfCards int, gameI
 		}
 		defer resp.Body.Close()
 
-		fmt.Println("Please make bid " + player.name + ":")
+		fmt.Println("Please make bid " + player.Name + ":")
 		gameMapMu.RLock()
 		ch := gameMap[gameID]
 		gameMapMu.RUnlock()
@@ -89,7 +87,7 @@ func (player *Player) makeBid(isLast bool, sumBids int, numberOfCards int, gameI
 		input := <-ch
 
 		// Handle player input for the game
-		fmt.Printf("Received input for game %d from player %d\n", input.GameID, input.Player.name, input.Player.bid)
+		fmt.Printf("Received input for game %d from player %d\n", input.GameID, input.Player.Name, input.Player.bid)
 		// Update game state accordingly
 
 		// sa dea publish pa canalul jocului cu noua stare
@@ -109,7 +107,7 @@ func (player *Player) GiveCards(cards []Card) {
 
 func (player *Player) HasSuite(card Card) bool {
 	for _, x := range player.cards {
-		if x.suite == card.suite {
+		if x.Suite == card.Suite {
 			return true
 		}
 	}
@@ -134,7 +132,7 @@ func (player *Player) GetValidCards(first *Card, trump *Card) []Card {
 
 	if hasFirst {
 		for _, elem := range player.cards {
-			if elem.suite == first.suite {
+			if elem.Suite == first.Suite {
 				validCards[index] = elem
 				index++
 			}
@@ -142,7 +140,7 @@ func (player *Player) GetValidCards(first *Card, trump *Card) []Card {
 	} else if hasTrump {
 
 		for _, elem := range player.cards {
-			if elem.suite == trump.suite {
+			if elem.Suite == trump.Suite {
 				validCards[index] = elem
 				index++
 			}
@@ -152,29 +150,97 @@ func (player *Player) GetValidCards(first *Card, trump *Card) []Card {
 	}
 	cards := make([]Card, 0)
 	for _, crd := range validCards {
-		if crd.value != 0 {
+		if crd.Value != 0 {
 			cards = append(cards, crd)
 		}
 	}
 	return cards
 }
 
-func (player *Player) playCard(first *Card, trump *Card) Card {
+func (player *Player) playCard(first *Card, trump *Card, gameID string) Card {
 	validCards := make([]Card, len(player.cards))
 	validCards = player.GetValidCards(first, trump)
-	ok := 1
-	var i int
 	fmt.Println("Cartile valide sunt")
 	fmt.Println(validCards)
-	for ok == 1 {
-		fmt.Println("Please choose card from the valid ones " + player.name + ":")
-		reader := bufio.NewReader(os.Stdin)
-		text, _ := reader.ReadString('\n')
-		i, _ = strconv.Atoi(text)
-		if i >= 0 && i <= len(validCards) {
-			ok = 0
-		}
+
+	var validCardsToSend PlayerCards
+	validCardsToSend.Player = player.Name
+	validCardsToSend.Cards = validCards
+	jsonData, err := json.Marshal(validCardsToSend)
+	os.Stdout.Write(jsonData)
+
+	command := map[string]interface{}{
+		"method": "publish",
+		"params": map[string]interface{}{
+			"channel": gameID,
+			"data": map[string]interface{}{
+				"data": jsonData,
+				"flag": "validCards",
+			},
+		},
 	}
 
-	return validCards[i]
+	dataA, err := json.Marshal(command)
+	if err != nil {
+		panic(err)
+	}
+	req, err := http.NewRequest("POST", "http://localhost:8000/api", bytes.NewBuffer(dataA))
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "apikey a3d9c270-52df-45f8-9a66-a1bb8e9e04ce")
+	client := http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	gameMapMu.RLock()
+	ch := gameMap[gameID]
+	gameMapMu.RUnlock()
+
+	input := <-ch
+	var j int
+	for i, c := range player.cards {
+		if c.Suite == input.playedCard.Suite && c.Value == input.playedCard.Value {
+			j = i
+		}
+	}
+	if j >= 0 && j < len(player.cards) {
+		player.cards = append(player.cards[:j], player.cards[j+1:]...)
+	}
+
+	command1 := map[string]interface{}{
+		"method": "publish",
+		"params": map[string]interface{}{
+			"channel": gameID,
+			"data": map[string]interface{}{
+				"who":   player.Name,
+				"value": input.playedCard.Value,
+				"suite": input.playedCard.Suite,
+				"flag":  "playedCard",
+			},
+		},
+	}
+
+	dataA1, err := json.Marshal(command1)
+	if err != nil {
+		panic(err)
+	}
+	req1, err := http.NewRequest("POST", "http://localhost:8000/api", bytes.NewBuffer(dataA1))
+	if err != nil {
+		panic(err)
+	}
+	req1.Header.Set("Content-Type", "application/json")
+	req1.Header.Set("Authorization", "apikey a3d9c270-52df-45f8-9a66-a1bb8e9e04ce")
+	client1 := http.Client{}
+	resp1, err := client1.Do(req1)
+	if err != nil {
+		panic(err)
+	}
+	defer resp1.Body.Close()
+
+	return input.playedCard
 }

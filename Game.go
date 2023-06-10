@@ -1,6 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"os"
+)
 
 // Game
 // func newGame() *Game
@@ -37,8 +43,91 @@ func (game *Game) play() {
 		game.deckOfCards.index = 0
 		game.deckOfCards.ShuffleDeck()
 		round.playRound(&game.players, &game.deckOfCards, elem, game.name)
+
+		var scores PlayerScore
+		for j := 0; j < 4; j++ {
+			scores.Players[j] = game.players[j]
+		}
+
+		jsonData, err := json.Marshal(scores)
+		os.Stdout.Write(jsonData)
+
+		command := map[string]interface{}{
+			"method": "publish",
+			"params": map[string]interface{}{
+				"channel": game.name,
+				"data": map[string]interface{}{
+					"data": jsonData,
+					"flag": "endRound",
+				},
+			},
+		}
+
+		dataA, err := json.Marshal(command)
+		if err != nil {
+			panic(err)
+		}
+		req, err := http.NewRequest("POST", "http://localhost:8000/api", bytes.NewBuffer(dataA))
+		if err != nil {
+			panic(err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", "apikey a3d9c270-52df-45f8-9a66-a1bb8e9e04ce")
+		client := http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			panic(err)
+		}
+		defer resp.Body.Close()
 	}
+	var maxScore int
+	maxScore = -1
 	for j := 0; j < 4; j++ {
-		fmt.Println(game.players[j].score)
+		fmt.Println(game.players[j].Score)
+		if game.players[j].Score > maxScore {
+			maxScore = game.players[j].Score
+		}
 	}
+
+	for j := 0; j < 4; j++ {
+		if game.players[j].Score == maxScore {
+			err := incrNumberOfGamesWon(User{Username: game.players[j].Name})
+			if err != nil {
+				return
+			}
+		} else {
+			err := incrNumberOfGamesLost((User{Username: game.players[j].Name}))
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	command := map[string]interface{}{
+		"method": "publish",
+		"params": map[string]interface{}{
+			"channel": game.name,
+			"data": map[string]interface{}{
+				"maxScore": maxScore,
+				"flag":     "endgame",
+			},
+		},
+	}
+
+	dataA, err := json.Marshal(command)
+	if err != nil {
+		panic(err)
+	}
+	req, err := http.NewRequest("POST", "http://localhost:8000/api", bytes.NewBuffer(dataA))
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "apikey a3d9c270-52df-45f8-9a66-a1bb8e9e04ce")
+	client := http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
 }

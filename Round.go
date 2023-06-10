@@ -1,5 +1,12 @@
 package main
 
+import (
+	"bytes"
+	"encoding/json"
+	"net/http"
+	"os"
+)
+
 // Round
 // playRound
 // plays the round according to the rules
@@ -12,8 +19,8 @@ type Round struct {
 
 func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, gameID string) {
 	round.sumOfBids = 0
-	round.trump.value = -1
-	round.first.value = -1
+	round.trump.Value = -1
+	round.first.Value = -1
 
 	for i := 0; i < 4; i++ {
 		(*players)[i].GiveCards(deck.GiveCards(numberOfCards))
@@ -22,6 +29,45 @@ func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, 
 	if numberOfCards < 8 {
 		round.trump = deck.GiveCards(1)[0]
 	}
+
+	/// trimit trump + cartile fiecauria
+	var gameDTO GameDTO
+	gameDTO.Trump = round.trump
+	for i := 0; i < 4; i++ {
+		gameDTO.Players[i].Player = (*players)[i].Name
+		gameDTO.Players[i].Cards = (*players)[i].cards
+	}
+	jsonData, err := json.Marshal(gameDTO)
+	os.Stdout.Write(jsonData)
+
+	command := map[string]interface{}{
+		"method": "publish",
+		"params": map[string]interface{}{
+			"channel": gameID,
+			"data": map[string]interface{}{
+				"data": jsonData,
+				"flag": "carti_joc",
+			},
+		},
+	}
+
+	dataA, err := json.Marshal(command)
+	if err != nil {
+		panic(err)
+	}
+	req, err := http.NewRequest("POST", "http://localhost:8000/api", bytes.NewBuffer(dataA))
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "apikey a3d9c270-52df-45f8-9a66-a1bb8e9e04ce")
+	client := http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
 	sum := 0
 
 	for i := 0; i < 3; i++ {
@@ -40,20 +86,20 @@ func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, 
 		for i := 0; i < 4; i++ {
 			var played Card
 			if isFirst == 1 {
-				if round.trump.value == -1 {
-					played = (*players)[i].playCard(nil, nil)
+				if round.trump.Value == -1 {
+					played = (*players)[i].playCard(nil, nil, gameID)
 				} else {
-					played = (*players)[i].playCard(nil, &round.trump)
+					played = (*players)[i].playCard(nil, &round.trump, gameID)
 				}
 				round.first = played
 				winningCard = played
 				winningPlayer = &(*players)[i]
 				isFirst = 0
 			} else {
-				played = (*players)[i].playCard(&round.first, &round.trump)
+				played = (*players)[i].playCard(&round.first, &round.trump, gameID)
 			}
 			var trumpCard *Card
-			if round.trump.value == -1 {
+			if round.trump.Value == -1 {
 				trumpCard = nil
 			} else {
 				trumpCard = &round.trump
@@ -68,7 +114,7 @@ func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, 
 
 	for i := 0; i < 4; i++ {
 		if (*players)[i].tricks == (*players)[i].bid {
-			(*players)[i].score++
+			(*players)[i].Score++
 		}
 	}
 }

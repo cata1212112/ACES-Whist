@@ -54,7 +54,7 @@ func TestDeck_ShuffleDeck(t *testing.T) {
 type Cards []Card
 
 func (p Cards) Len() int           { return len(p) }
-func (p Cards) Less(i, j int) bool { return p[i].value < p[j].value }
+func (p Cards) Less(i, j int) bool { return p[i].Value < p[j].Value }
 func (p Cards) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 func testEq(a Cards, b Cards) bool {
@@ -64,7 +64,7 @@ func testEq(a Cards, b Cards) bool {
 		return false
 	}
 	for i := range a {
-		if (a[i].value != b[i].value) || (a[i].suite != b[i].suite) {
+		if (a[i].Value != b[i].Value) || (a[i].Suite != b[i].Suite) {
 			return false
 		}
 	}
