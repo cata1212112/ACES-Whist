@@ -124,27 +124,36 @@
                 document.getElementById("bid_wrapper").style.display = "grid";
 
                 document.getElementById("bid_button").addEventListener("click", () => {
-                    document.getElementById("bid_wrapper").style.display = "none";
-                    // trimite la server valoara din
-
                     bid = document.getElementById("bid_input").value
                     console.log(bid)
-                    if (bid !== "") {
-                        const xhr1 = new XMLHttpRequest();
-                        xhr1.open("POST", "http://localhost:5000/makeBid")
-                        xhr1.setRequestHeader("Content-Type", "application/json");
-                        var requestData = JSON.stringify({
-                            "bid": bid,
-                            "lobby": document.getElementById("lobby_name").innerHTML
-                        });
-                        xhr1.onload = () => {
-                            if (xhr1.status === 200) {
-                                console.log("OK")
-                            } else {
-                                console.log("Error")
+                    if (bid !== "" && !isNaN(bid)) {
+                        intBid = parseInt(bid)
+                        sum = parseInt(rasp["sumBids"])
+                        noCards = parseInt(rasp["numberOfCards"])
+                        console.log(rasp["isLast"], intBid, sum, noCards)
+                        if (rasp["isLast"] === true && intBid + sum === noCards) {
+                            alert("The sum of all bids must not be the same as the number of cards dealt to each player " + "Sum of bids: " +rasp["sumBids"] + "NoCards : " + rasp["numberOfCards"]);
+                        } else {
+                            document.getElementById("bid_wrapper").style.display = "none";
+
+                            const xhr1 = new XMLHttpRequest();
+                            xhr1.open("POST", "http://localhost:5000/makeBid")
+                            xhr1.setRequestHeader("Content-Type", "application/json");
+                            var requestData = JSON.stringify({
+                                "bid": bid,
+                                "lobby": document.getElementById("lobby_name").innerHTML
+                            });
+                            xhr1.onload = () => {
+                                if (xhr1.status === 200) {
+                                    console.log("OK")
+                                } else {
+                                    console.log("Error")
+                                }
                             }
+                            xhr1.send(requestData)
                         }
-                        xhr1.send(requestData)
+                    } else {
+                        alert("Please enter a number for the bid.");
                     }
                 })
             }
@@ -187,7 +196,7 @@
                 }
                for (let carte of decodedData.cards) {
                    carti_player = document.getElementById("carti_jucator")
-                   img_carte = "http://localhost:5000/deckOfCards/SVG-cards-1.3/" + values.get(carte.value) + "_of_" + suites.get(carte.suite) + ".svg"
+                   img_carte = 'http://localhost:5000/deckOfCards/SVG-cards-1.3/' + values.get(carte.value) + "_of_" + suites.get(carte.suite) + ".svg"
                    for (let carte_img of carti_player.children) {
                        console.log(img_carte, carte_img.src)
                         if (carte_img.src === img_carte) {
@@ -203,7 +212,7 @@
                                 console.log(values.get(aux[0]), suites.get(aux[1]))
                                 target.style.opacity = '0'
                                 const xhr1 = new XMLHttpRequest();
-                                xhr1.open("POST", "http://localhost:5000/playCard")
+                                xhr1.open("POST", 'http://localhost:5000/playCard')
                                 xhr1.setRequestHeader("Content-Type", "application/json");
                                 var requestData = JSON.stringify({
                                     "value": aux[0],
@@ -265,6 +274,9 @@
                     }
                 }
             }
+        }
+        if (rasp["flag"] === "endHand") {
+            document.getElementById("playedCards").innerHTML = ""
         }
     })
     sub.on('subscribing', function(ctx) {

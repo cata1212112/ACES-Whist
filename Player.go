@@ -45,59 +45,45 @@ func (player *Player) addScore(x int) {
 }
 
 func (player *Player) makeBid(isLast bool, sumBids int, numberOfCards int, gameID string) {
-	/// asteapta un bid asteapta un post din forntend
-	ok := 1
-	for ok == 1 {
-		// trimite pe canalul pe care jocul un masaj playerului cu numele name sa bage big
-
-		command := map[string]interface{}{
-			"method": "publish",
-			"params": map[string]interface{}{
-				"channel": gameID,
-				"data": map[string]interface{}{
-					"user": player.Name,
-					"flag": "requestBid",
-				},
+	command := map[string]interface{}{
+		"method": "publish",
+		"params": map[string]interface{}{
+			"channel": gameID,
+			"data": map[string]interface{}{
+				"user":          player.Name,
+				"flag":          "requestBid",
+				"isLast":        isLast,
+				"sumBids":       sumBids,
+				"numberOfCards": numberOfCards,
 			},
-		}
-
-		dataA, err := json.Marshal(command)
-		if err != nil {
-			panic(err)
-		}
-		req, err := http.NewRequest("POST", "http://localhost:8000/api", bytes.NewBuffer(dataA))
-		if err != nil {
-			panic(err)
-		}
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "apikey a3d9c270-52df-45f8-9a66-a1bb8e9e04ce")
-		client := http.Client{}
-		resp, err := client.Do(req)
-		if err != nil {
-			panic(err)
-		}
-		defer resp.Body.Close()
-
-		fmt.Println("Please make bid " + player.Name + ":")
-		gameMapMu.RLock()
-		ch := gameMap[gameID]
-		gameMapMu.RUnlock()
-
-		// Wait for player input
-		input := <-ch
-
-		// Handle player input for the game
-		fmt.Printf("Received input for game %d from player %d\n", input.GameID, input.Player.Name, input.Player.bid)
-		// Update game state accordingly
-
-		// sa dea publish pa canalul jocului cu noua stare
-
-		if isLast == true && player.bid != numberOfCards-sumBids {
-			ok = 0
-		} else {
-			ok = 0
-		}
+		},
 	}
+
+	dataA, err := json.Marshal(command)
+	if err != nil {
+		panic(err)
+	}
+	req, err := http.NewRequest("POST", "http://localhost:8000/api", bytes.NewBuffer(dataA))
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "apikey a3d9c270-52df-45f8-9a66-a1bb8e9e04ce")
+	client := http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	fmt.Println("Please make bid " + player.Name + ":")
+	gameMapMu.RLock()
+	ch := gameMap[gameID]
+	gameMapMu.RUnlock()
+	input := <-ch
+
+	player.bid = input.Player.bid
+	fmt.Println(player.bid)
 }
 
 func (player *Player) GiveCards(cards []Card) {
