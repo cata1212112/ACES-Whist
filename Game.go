@@ -53,7 +53,7 @@ func (game *Game) play() {
 
 		jsonData, err := json.Marshal(scores)
 		os.Stdout.Write(jsonData)
-
+		fmt.Println("trimit scoruruile")
 		command := map[string]interface{}{
 			"method": "publish",
 			"params": map[string]interface{}{

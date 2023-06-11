@@ -44,7 +44,7 @@ func (player *Player) addScore(x int) {
 	player.Score += x
 }
 
-func (player *Player) makeBid(isLast bool, sumBids int, numberOfCards int, gameID string) {
+func (player *Player) makeBid(isLast bool, sumBids int, numberOfCards int, gameID string, ch chan PlayerInput) {
 	command := map[string]interface{}{
 		"method": "publish",
 		"params": map[string]interface{}{
@@ -77,9 +77,9 @@ func (player *Player) makeBid(isLast bool, sumBids int, numberOfCards int, gameI
 	defer resp.Body.Close()
 
 	fmt.Println("Please make bid " + player.Name + ":")
-	gameMapMu.RLock()
-	ch := gameMap[player.Name]
-	gameMapMu.RUnlock()
+	//gameMapMu.RLock()
+	//ch := gameMap[player.Name]
+	//gameMapMu.RUnlock()
 	var input PlayerInput
 	input = <-ch
 	//for input.Player.Name != player.Name {
@@ -149,7 +149,7 @@ func (player *Player) GetValidCards(first *Card, trump *Card) []Card {
 	return cards
 }
 
-func (player *Player) playCard(first *Card, trump *Card, gameID string) Card {
+func (player *Player) playCard(first *Card, trump *Card, gameID string, ch chan PlayerInput) Card {
 	validCards := make([]Card, len(player.cards))
 	validCards = player.GetValidCards(first, trump)
 	fmt.Println("Cartile valide sunt")
@@ -189,9 +189,9 @@ func (player *Player) playCard(first *Card, trump *Card, gameID string) Card {
 	}
 	defer resp.Body.Close()
 
-	gameMapMu.RLock()
-	ch := gameMap[player.Name]
-	gameMapMu.RUnlock()
+	//gameMapMu.RLock()
+	//ch := gameMap[player.Name]
+	//gameMapMu.RUnlock()
 
 	input := <-ch
 	var j int
@@ -234,5 +234,6 @@ func (player *Player) playCard(first *Card, trump *Card, gameID string) Card {
 	}
 	defer resp1.Body.Close()
 
-	return input.playedCard
+	//return input.playedCard
+	return *NewCard(input.playedCard.Suite, input.playedCard.Value)
 }

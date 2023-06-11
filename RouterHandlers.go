@@ -359,7 +359,10 @@ func getCard(w http.ResponseWriter, r *http.Request) {
 	println(filename)
 	filePath := "deckOfCards/SVG-cards-1.3/" + filename
 	http.ServeFile(w, r, filePath)
+
 }
+
+var games []*Game
 
 func addToLobbyHandler(w http.ResponseWriter, r *http.Request) {
 	var requestData struct {
@@ -378,8 +381,8 @@ func addToLobbyHandler(w http.ResponseWriter, r *http.Request) {
 	lobbies[lobby] = append(lobbies[lobby], requestData.Name)
 
 	if len(lobbies[lobby]) == 4 {
-		var game = newGame()
-		game.name = lobby
+		games = append(games, newGame())
+		games[len(games)-1].name = lobby
 
 		var player1 Player
 		var player2 Player
@@ -391,10 +394,10 @@ func addToLobbyHandler(w http.ResponseWriter, r *http.Request) {
 		player3.setName(lobbies[lobby][2])
 		player4.setName(lobbies[lobby][3])
 
-		game.addPlayer(player1)
-		game.addPlayer(player2)
-		game.addPlayer(player3)
-		game.addPlayer(player4)
+		games[len(games)-1].addPlayer(player1)
+		games[len(games)-1].addPlayer(player2)
+		games[len(games)-1].addPlayer(player3)
+		games[len(games)-1].addPlayer(player4)
 
 		playerChannel1 := make(chan PlayerInput)
 		playerChannel2 := make(chan PlayerInput)
@@ -406,7 +409,7 @@ func addToLobbyHandler(w http.ResponseWriter, r *http.Request) {
 		gameMap[lobbies[lobby][2]] = playerChannel3
 		gameMap[lobbies[lobby][3]] = playerChannel4
 		gameMapMu.Unlock()
-		go game.play()
+		go games[len(games)-1].play()
 	}
 
 	command := map[string]interface{}{
@@ -436,6 +439,7 @@ func addToLobbyHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	defer resp.Body.Close()
+	w.WriteHeader(http.StatusOK)
 
 }
 
@@ -511,7 +515,9 @@ func getPlayedCard(w http.ResponseWriter, r *http.Request) {
 		},
 		playedCard: *NewCard(suites(suite), int(value)),
 	}
-	//gameChannel := make(chan PlayerInput)
+	fmt.Println(lobby, myUsername, playerInput.playedCard)
+	fmt.Println("Cartejucata ")
+	//fmt.Println(myUsername, requestData.Jucator)
 	gameMapMu.RLock()
 	gameMap[myUsername] <- playerInput
 	gameMapMu.RUnlock()
@@ -586,6 +592,8 @@ func removeFromLobbyHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	defer resp.Body.Close()
+	w.WriteHeader(http.StatusOK)
+
 }
 
 func manageFriendsHandler(w http.ResponseWriter, r *http.Request) {

@@ -254,7 +254,8 @@
             document.getElementById("playedCards").appendChild(img)
         }
         if (rasp["flag"] === "endRound") {
-            // clickedCards.clear()
+            clickableCards.clear()
+            console.log("endRound")
             const decodedData = JSON.parse(atob(rasp["data"]));
             document.getElementById("score").innerHTML = ''
             for (player of decodedData.players) {
@@ -298,7 +299,7 @@
                 if (xhr.status === 200) {
                     console.log("Name added to the lobby successfully");
                     const xhr1 = new XMLHttpRequest();
-                    xhr1.open("GET", 'http://localhost:5000/lobbyMembers/' + document.getElementById("lobby_name").innerHTML);
+                    xhr1.open("GET", 'http://localhost:5000/lobbyMembers/' + document.getElementById("lobby_name").innerHTML, false);
                     xhr1.onload = function () {
                         console.log(xhr1.response);
                         var vec = JSON.parse(xhr1.response);
