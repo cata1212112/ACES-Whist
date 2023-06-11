@@ -78,9 +78,15 @@ func (player *Player) makeBid(isLast bool, sumBids int, numberOfCards int, gameI
 
 	fmt.Println("Please make bid " + player.Name + ":")
 	gameMapMu.RLock()
-	ch := gameMap[gameID]
+	ch := gameMap[player.Name]
 	gameMapMu.RUnlock()
-	input := <-ch
+	var input PlayerInput
+	input = <-ch
+	//for input.Player.Name != player.Name {
+	//	input = <-ch
+	//}
+
+	fmt.Println("am primit bid", input.Player.bid)
 
 	player.bid = input.Player.bid
 	fmt.Println(player.bid)
@@ -184,7 +190,7 @@ func (player *Player) playCard(first *Card, trump *Card, gameID string) Card {
 	defer resp.Body.Close()
 
 	gameMapMu.RLock()
-	ch := gameMap[gameID]
+	ch := gameMap[player.Name]
 	gameMapMu.RUnlock()
 
 	input := <-ch

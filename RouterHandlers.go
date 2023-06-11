@@ -396,9 +396,15 @@ func addToLobbyHandler(w http.ResponseWriter, r *http.Request) {
 		game.addPlayer(player3)
 		game.addPlayer(player4)
 
-		gameChannel := make(chan PlayerInput)
+		playerChannel1 := make(chan PlayerInput)
+		playerChannel2 := make(chan PlayerInput)
+		playerChannel3 := make(chan PlayerInput)
+		playerChannel4 := make(chan PlayerInput)
 		gameMapMu.Lock()
-		gameMap[game.name] = gameChannel
+		gameMap[lobbies[lobby][0]] = playerChannel1
+		gameMap[lobbies[lobby][1]] = playerChannel2
+		gameMap[lobbies[lobby][2]] = playerChannel3
+		gameMap[lobbies[lobby][3]] = playerChannel4
 		gameMapMu.Unlock()
 		go game.play()
 	}
@@ -435,8 +441,9 @@ func addToLobbyHandler(w http.ResponseWriter, r *http.Request) {
 
 func getPlayerBid(w http.ResponseWriter, r *http.Request) {
 	var requestData struct {
-		Bid   string `json:"bid"`
-		Lobby string `json:"lobby"`
+		Bid     string `json:"bid"`
+		Lobby   string `json:"lobby"`
+		Jucator string `json:"jucator"`
 	}
 	err := json.NewDecoder(r.Body).Decode(&requestData)
 	if err != nil {
@@ -463,11 +470,14 @@ func getPlayerBid(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 	fmt.Println(lobby, myUsername, bid)
-	gameChannel := make(chan PlayerInput)
+	fmt.Println("De ce nu mergi in ")
+	fmt.Println(myUsername, requestData.Jucator)
+	//gameChannel := make(chan PlayerInput)
 	gameMapMu.RLock()
-	gameChannel = gameMap[lobby]
+	gameMap[myUsername] <- playerInput
 	gameMapMu.RUnlock()
-	gameChannel <- playerInput
+	//gameChannel <- playerInput
+	w.WriteHeader(http.StatusOK)
 }
 
 func getPlayedCard(w http.ResponseWriter, r *http.Request) {
@@ -501,11 +511,11 @@ func getPlayedCard(w http.ResponseWriter, r *http.Request) {
 		},
 		playedCard: *NewCard(suites(suite), int(value)),
 	}
-	gameChannel := make(chan PlayerInput)
+	//gameChannel := make(chan PlayerInput)
 	gameMapMu.RLock()
-	gameChannel = gameMap[lobby]
+	gameMap[myUsername] <- playerInput
 	gameMapMu.RUnlock()
-	gameChannel <- playerInput
+	w.WriteHeader(http.StatusOK)
 }
 
 func lobbyMembers(w http.ResponseWriter, r *http.Request) {

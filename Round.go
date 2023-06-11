@@ -73,6 +73,7 @@ func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, 
 	sum := 0
 
 	for i := 0; i < 3; i++ {
+		fmt.Println("cer bid playerului ", i)
 		(*players)[i].makeBid(false, 0, numberOfCards, gameID)
 
 		(*players)[i].tricks = 0
@@ -144,7 +145,9 @@ func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, 
 
 	for i := 0; i < 4; i++ {
 		if (*players)[i].tricks == (*players)[i].bid {
-			(*players)[i].Score++
+			(*players)[i].Score += 10 + (*players)[i].bid
+		} else {
+			//(*players)[i].Score -= math.Abs((*players)[i].tricks - (*players)[i].bid)
 		}
 	}
 }

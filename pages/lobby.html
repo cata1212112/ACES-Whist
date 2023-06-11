@@ -120,6 +120,7 @@
         }
         if (rasp["flag"] === "requestBid") {
             user = document.getElementById("username").innerHTML
+            console.log(user, rasp["user"])
             if (user === rasp["user"]) {
                 document.getElementById("bid_wrapper").style.display = "grid";
 
@@ -141,7 +142,8 @@
                             xhr1.setRequestHeader("Content-Type", "application/json");
                             var requestData = JSON.stringify({
                                 "bid": bid,
-                                "lobby": document.getElementById("lobby_name").innerHTML
+                                "lobby": document.getElementById("lobby_name").innerHTML,
+                                "jucator" : document.getElementById("username").innerHTML
                             });
                             xhr1.onload = () => {
                                 if (xhr1.status === 200) {
@@ -231,7 +233,7 @@
                                 clickableCards.clear() 
                                 document.getElementById("request_card").style.display="none";
                                 for(let turnIdleCard of document.getElementById("carti_jucator").children) {
-                                    if(turnIdleCard.style.opacity == '1')
+                                    if(turnIdleCard.style.opacity === '1')
                                         turnIdleCard.style.opacity = '0.5'
                                 }
                             })
