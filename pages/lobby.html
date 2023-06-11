@@ -252,7 +252,7 @@
             document.getElementById("playedCards").appendChild(img)
         }
         if (rasp["flag"] === "endRound") {
-            clickedCards.clear()
+            // clickedCards.clear()
             const decodedData = JSON.parse(atob(rasp["data"]));
             document.getElementById("score").innerHTML = ''
             for (player of decodedData.players) {

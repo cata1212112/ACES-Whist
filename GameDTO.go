@@ -11,5 +11,5 @@ type GameDTO struct {
 }
 
 type PlayerScore struct {
-	Players []Player `json:"players"`
+	Players [4]Player `json:"players"`
 }

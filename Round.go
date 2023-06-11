@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 )
@@ -18,6 +19,7 @@ type Round struct {
 }
 
 func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, gameID string) {
+	fmt.Println("intrat")
 	round.sumOfBids = 0
 	round.trump.Value = -1
 	round.first.Value = -1

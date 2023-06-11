@@ -36,6 +36,8 @@ func (game *Game) addPlayer(player Player) {
 
 func (game *Game) play() {
 	for _, elem := range game.numberOfCards {
+		fmt.Println("runda noua")
+
 		for j := 0; j < 4; j++ {
 			game.players[j].tricks = 0
 		}
