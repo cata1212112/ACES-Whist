@@ -11,7 +11,8 @@
 <p id="lobby_name" style="display: none">{{.LobbyName}}</p>
 <p id="username" style="display: none">{{.Username}}</p>
 <script type="text/javascript">
-    const suites = new Map()
+    const clickableCards = new Set();
+    const suites = new Map();
     suites.set(1, "hearts")
     suites.set(2, "clubs")
     suites.set(3, "diamonds")
@@ -148,11 +149,14 @@
                 })
             }
         }
+        
+        // cartile distribuite la inceputul fiecarei runde ()
         if (rasp["flag"] === "carti_joc") {
             const decodedData = JSON.parse(atob(rasp["data"]));
             console.log(rasp["flag"])
             console.log(decodedData)
             for (let x of decodedData.players) {
+                // daca jucatorul x este jucatorul client (eu), i se seteaza cartile din mana
                 if (x.username === document.getElementById("username").innerHTML) {
                     carti_player = document.getElementById("carti_jucator")
                     carti_player.innerHTML = ""
@@ -172,10 +176,15 @@
                 document.getElementById("trump").appendChild(trump)
             }
         }
+        
+        // my turn here
         if (rasp["flag"] === "validCards") {
             const decodedData = JSON.parse(atob(rasp["data"]));
             if (decodedData.username === document.getElementById("username").innerHTML) {
                 document.getElementById("request_card").style.display="grid";
+                for (let carte of decodedData.cards) {
+                    clickableCards.add(carte.value + " " + carte.suite)
+                }
                for (let carte of decodedData.cards) {
                    carti_player = document.getElementById("carti_jucator")
                    img_carte = "http://localhost:5000/deckOfCards/SVG-cards-1.3/" + values.get(carte.value) + "_of_" + suites.get(carte.suite) + ".svg"
@@ -184,27 +193,40 @@
                         if (carte_img.src === img_carte) {
                             carte_img.style.opacity = '1'
                             console.log(carte_img)
-                            aux = carte_img.alt.split(" ")
-                            carte_img.addEventListener("click", () => {
-                                    carte_img.style.opacity = '0'
-                                    const xhr1 = new XMLHttpRequest();
-                                    xhr1.open("POST", "http://localhost:5000/playCard")
-                                    xhr1.setRequestHeader("Content-Type", "application/json");
-                                    var requestData = JSON.stringify({
-                                        "value": aux[0],
-                                        "suite": aux[1],
-                                        "lobby": document.getElementById("lobby_name").innerHTML
-                                    });
-                                    xhr1.onload = () => {
-                                        if (xhr1.status === 200) {
-                                            console.log("OK")
-                                        } else {
-                                            console.log("Error")
-                                        }
+                            carte_img.addEventListener("click", (event) => {
+                                console.log(event.target)
+                                target = event.target
+                                if(!clickableCards.has(target.alt))
+                                    return
+                                aux = target.alt.split(" ")
+                                console.log("Clicked on: ", carte_img)
+                                console.log(values.get(aux[0]), suites.get(aux[1]))
+                                target.style.opacity = '0'
+                                const xhr1 = new XMLHttpRequest();
+                                xhr1.open("POST", "http://localhost:5000/playCard")
+                                xhr1.setRequestHeader("Content-Type", "application/json");
+                                var requestData = JSON.stringify({
+                                    "value": aux[0],
+                                    "suite": aux[1],
+                                    "lobby": document.getElementById("lobby_name").innerHTML
+                                });
+                                console.log("request data: ", requestData)
+                                xhr1.onload = () => {
+                                    if (xhr1.status === 200) {
+                                        console.log("OK")
+                                    } else {
+                                        console.log("Error")
                                     }
-                                    xhr1.send(requestData)
+                                }
+                                xhr1.send(requestData)
+                                clickableCards.clear() 
+                                document.getElementById("request_card").style.display="none";
+                                for(let turnIdleCard of document.getElementById("carti_jucator").children) {
+                                    if(turnIdleCard.style.opacity == '1')
+                                        turnIdleCard.style.opacity = '0.5'
+                                }
                             })
-                        }
+                        } 
                    }
                }
             }
@@ -221,6 +243,7 @@
             document.getElementById("playedCards").appendChild(img)
         }
         if (rasp["flag"] === "endRound") {
+            clickedCards.clear()
             const decodedData = JSON.parse(atob(rasp["data"]));
             document.getElementById("score").innerHTML = ''
             for (player of decodedData.players) {
