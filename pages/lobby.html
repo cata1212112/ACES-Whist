@@ -126,6 +126,7 @@
                 document.getElementById("bid_button").addEventListener("click", () => {
                     bid = document.getElementById("bid_input").value
                     console.log(bid)
+<<<<<<< HEAD
                     if (bid !== "" && !isNaN(bid)) {
                         intBid = parseInt(bid)
                         sum = parseInt(rasp["sumBids"])
@@ -149,6 +150,22 @@
                                 } else {
                                     console.log("Error")
                                 }
+=======
+                    // testati daca e valid (numar si nu gol) + fortati ultimul player sa aleaga un bid valid
+                    if (bid !== "") {
+                        const xhr1 = new XMLHttpRequest();
+                        xhr1.open("POST", "http://localhost:5000/makeBid")
+                        xhr1.setRequestHeader("Content-Type", "application/json");
+                        var requestData = JSON.stringify({
+                            "bid": bid,
+                            "lobby": document.getElementById("lobby_name").innerHTML
+                        });
+                        xhr1.onload = () => {
+                            if (xhr1.status === 200) {
+                                console.log("OK")
+                            } else {
+                                console.log("Error")
+>>>>>>> 8e926e6481312b77f2410381a7b56726788bc9aa
                             }
                             xhr1.send(requestData)
                         }
