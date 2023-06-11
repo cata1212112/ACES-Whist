@@ -179,10 +179,10 @@
                 }
             }
             if (decodedData.trump.value >= 7) {
-                trump = "../deckOfCards/SVG-cards-1.3/" + values.get(x.trump.value) + "_of_" + suites.get(x.trump.suite) + ".svg"
+                trump = "../deckOfCards/SVG-cards-1.3/" + values.get(decodedData.trump.value) + "_of_" + suites.get(decodedData.trump.suite) + ".svg"
                 aux = document.createElement("img")
                 aux.src = trump
-                document.getElementById("trump").appendChild(trump)
+                document.getElementById("trump").appendChild(aux)
             }
         }
         
