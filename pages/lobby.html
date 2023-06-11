@@ -129,6 +129,7 @@
 
                     bid = document.getElementById("bid_input").value
                     console.log(bid)
+                    // testati daca e valid (numar si nu gol) + fortati ultimul player sa aleaga un bid valid
                     if (bid !== "") {
                         const xhr1 = new XMLHttpRequest();
                         xhr1.open("POST", "http://localhost:5000/makeBid")
