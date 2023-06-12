@@ -403,11 +403,19 @@ func addToLobbyHandler(w http.ResponseWriter, r *http.Request) {
 		playerChannel2 := make(chan PlayerInput)
 		playerChannel3 := make(chan PlayerInput)
 		playerChannel4 := make(chan PlayerInput)
+		playerChannel11 := make(chan PlayerInput)
+		playerChannel22 := make(chan PlayerInput)
+		playerChannel33 := make(chan PlayerInput)
+		playerChannel44 := make(chan PlayerInput)
 		gameMapMu.Lock()
-		gameMap[lobbies[lobby][0]] = playerChannel1
-		gameMap[lobbies[lobby][1]] = playerChannel2
-		gameMap[lobbies[lobby][2]] = playerChannel3
-		gameMap[lobbies[lobby][3]] = playerChannel4
+		gameMap[lobbies[lobby][0]+"bid"] = playerChannel1
+		gameMap[lobbies[lobby][1]+"bid"] = playerChannel2
+		gameMap[lobbies[lobby][2]+"bid"] = playerChannel3
+		gameMap[lobbies[lobby][3]+"bid"] = playerChannel4
+		gameMap[lobbies[lobby][0]+"card"] = playerChannel11
+		gameMap[lobbies[lobby][1]+"card"] = playerChannel22
+		gameMap[lobbies[lobby][2]+"card"] = playerChannel33
+		gameMap[lobbies[lobby][3]+"card"] = playerChannel44
 		gameMapMu.Unlock()
 		go games[len(games)-1].play()
 	}
@@ -478,7 +486,7 @@ func getPlayerBid(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(myUsername, requestData.Jucator)
 	//gameChannel := make(chan PlayerInput)
 	gameMapMu.RLock()
-	gameMap[myUsername] <- playerInput
+	gameMap[myUsername+"bid"] <- playerInput
 	gameMapMu.RUnlock()
 	//gameChannel <- playerInput
 	w.WriteHeader(http.StatusOK)
@@ -519,7 +527,7 @@ func getPlayedCard(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Cartejucata ")
 	//fmt.Println(myUsername, requestData.Jucator)
 	gameMapMu.RLock()
-	gameMap[myUsername] <- playerInput
+	gameMap[myUsername+"card"] <- playerInput
 	gameMapMu.RUnlock()
 	w.WriteHeader(http.StatusOK)
 }
