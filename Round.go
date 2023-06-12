@@ -74,18 +74,20 @@ func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, 
 
 	for i := 0; i < 3; i++ {
 		fmt.Println("cer bid playerului ", i)
-		gameMapMu.RLock()
+		fmt.Println("esti blocat?")
+		gameMapMu.Lock()
 		ch := gameMap[(*players)[i].Name+"bid"]
-		gameMapMu.RUnlock()
+		gameMapMu.Unlock()
 		(*players)[i].makeBid(false, 0, numberOfCards, gameID, ch)
 
 		(*players)[i].tricks = 0
 		sum += (*players)[i].getBid()
 	}
-	gameMapMu.RLock()
+	gameMapMu.Lock()
 	ch := gameMap[(*players)[3].Name+"bid"]
-	gameMapMu.RUnlock()
+	gameMapMu.Unlock()
 	(*players)[3].makeBid(true, sum, numberOfCards, gameID, ch)
+
 	(*players)[3].tricks = 0
 	for i := 0; i < numberOfCards; i++ {
 		var winningCard Card
@@ -95,23 +97,30 @@ func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, 
 		for i := 0; i < 4; i++ {
 			var played Card
 			if isFirst == 1 {
-				gameMapMu.RLock()
-				ch := gameMap[(*players)[i].Name+"card"]
-				gameMapMu.RUnlock()
+
 				if round.trump.Value == -1 {
+					gameMapMu.Lock()
+					ch := gameMap[(*players)[i].Name+"card"]
+					gameMapMu.Unlock()
 					played = (*players)[i].playCard(nil, nil, gameID, ch)
+
 				} else {
+					gameMapMu.Lock()
+					ch := gameMap[(*players)[i].Name+"card"]
+					gameMapMu.Unlock()
 					played = (*players)[i].playCard(nil, &round.trump, gameID, ch)
+
 				}
 				round.first = played
 				winningCard = played
 				winningPlayer = &(*players)[i]
 				isFirst = 0
 			} else {
-				gameMapMu.RLock()
+				gameMapMu.Lock()
 				ch := gameMap[(*players)[i].Name+"card"]
-				gameMapMu.RUnlock()
+				gameMapMu.Unlock()
 				played = (*players)[i].playCard(&round.first, &round.trump, gameID, ch)
+
 			}
 			var trumpCard *Card
 			if round.trump.Value == -1 {

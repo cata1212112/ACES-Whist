@@ -485,9 +485,11 @@ func getPlayerBid(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("De ce nu mergi in ")
 	fmt.Println(myUsername, requestData.Jucator)
 	//gameChannel := make(chan PlayerInput)
-	gameMapMu.RLock()
-	gameMap[myUsername+"bid"] <- playerInput
-	gameMapMu.RUnlock()
+	gameMapMu.Lock()
+	ch := gameMap[myUsername+"bid"]
+	gameMapMu.Unlock()
+	ch <- playerInput
+	fmt.Println("am luat canalul")
 	//gameChannel <- playerInput
 	w.WriteHeader(http.StatusOK)
 }
@@ -526,9 +528,10 @@ func getPlayedCard(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(lobby, myUsername, playerInput.playedCard)
 	fmt.Println("Cartejucata ")
 	//fmt.Println(myUsername, requestData.Jucator)
-	gameMapMu.RLock()
-	gameMap[myUsername+"card"] <- playerInput
-	gameMapMu.RUnlock()
+	gameMapMu.Lock()
+	ch := gameMap[myUsername+"card"]
+	gameMapMu.Unlock()
+	ch <- playerInput
 	w.WriteHeader(http.StatusOK)
 }
 

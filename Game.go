@@ -35,6 +35,7 @@ func (game *Game) addPlayer(player Player) {
 }
 
 func (game *Game) play() {
+	fmt.Println("INCEPE JOCULLLLLLLLLLL")
 	for _, elem := range game.numberOfCards {
 		fmt.Println("runda noua")
 
