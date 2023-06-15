@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 )
 
 // Game
@@ -35,8 +36,8 @@ func (game *Game) addPlayer(player Player) {
 }
 
 func (game *Game) play() {
+	fmt.Println("INCEPE JOCULLLLLLLLLLL")
 	for _, elem := range game.numberOfCards {
-		fmt.Println("runda noua")
 
 		for j := 0; j < 4; j++ {
 			game.players[j].tricks = 0
@@ -46,6 +47,7 @@ func (game *Game) play() {
 		game.deckOfCards.ShuffleDeck()
 		round.playRound(&game.players, &game.deckOfCards, elem, game.name)
 
+		fmt.Println("s-a terminat runda")
 		var scores PlayerScore
 		for j := 0; j < 4; j++ {
 			scores.Players[j] = game.players[j]
@@ -81,6 +83,7 @@ func (game *Game) play() {
 			panic(err)
 		}
 		defer resp.Body.Close()
+		time.Sleep(5)
 	}
 	var maxScore int
 	maxScore = -1
@@ -132,4 +135,5 @@ func (game *Game) play() {
 		panic(err)
 	}
 	defer resp.Body.Close()
+	time.Sleep(5)
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 )
 
 // Round
@@ -19,7 +20,7 @@ type Round struct {
 }
 
 func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, gameID string) {
-	fmt.Println("intrat")
+	fmt.Println("incepe runda pentru jocul ", gameID)
 	round.sumOfBids = 0
 	round.trump.Value = -1
 	round.first.Value = -1
@@ -72,21 +73,24 @@ func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, 
 
 	sum := 0
 
+	fmt.Println("cer biduri")
 	for i := 0; i < 3; i++ {
-		fmt.Println("cer bid playerului ", i)
-		gameMapMu.RLock()
+		fmt.Println("cer bid playerului ", (*players)[i].Name)
+		gameMapMu.Lock()
 		ch := gameMap[(*players)[i].Name+"bid"]
-		gameMapMu.RUnlock()
+		gameMapMu.Unlock()
 		(*players)[i].makeBid(false, 0, numberOfCards, gameID, ch)
 
 		(*players)[i].tricks = 0
 		sum += (*players)[i].getBid()
 	}
-	gameMapMu.RLock()
+	gameMapMu.Lock()
 	ch := gameMap[(*players)[3].Name+"bid"]
-	gameMapMu.RUnlock()
+	gameMapMu.Unlock()
+	fmt.Println("cer bid playerului ", (*players)[3].Name)
 	(*players)[3].makeBid(true, sum, numberOfCards, gameID, ch)
 	(*players)[3].tricks = 0
+	fmt.Println("incepe jucatul cartilor")
 	for i := 0; i < numberOfCards; i++ {
 		var winningCard Card
 		var winningPlayer *Player
@@ -94,10 +98,11 @@ func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, 
 		isFirst := 1
 		for i := 0; i < 4; i++ {
 			var played Card
+			fmt.Println("Cer carte jucatorului", (*players)[i].Name)
 			if isFirst == 1 {
-				gameMapMu.RLock()
+				gameMapMu.Lock()
 				ch := gameMap[(*players)[i].Name+"card"]
-				gameMapMu.RUnlock()
+				gameMapMu.Unlock()
 				if round.trump.Value == -1 {
 					played = (*players)[i].playCard(nil, nil, gameID, ch)
 				} else {
@@ -108,9 +113,9 @@ func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, 
 				winningPlayer = &(*players)[i]
 				isFirst = 0
 			} else {
-				gameMapMu.RLock()
+				gameMapMu.Lock()
 				ch := gameMap[(*players)[i].Name+"card"]
-				gameMapMu.RUnlock()
+				gameMapMu.Unlock()
 				played = (*players)[i].playCard(&round.first, &round.trump, gameID, ch)
 			}
 			var trumpCard *Card
@@ -152,6 +157,7 @@ func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, 
 		}
 		defer resp.Body.Close()
 
+		time.Sleep(5)
 		winningPlayer.tricks++
 	}
 
