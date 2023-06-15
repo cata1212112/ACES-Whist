@@ -76,28 +76,18 @@ func (player *Player) makeBid(isLast bool, sumBids int, numberOfCards int, gameI
 	}
 	defer resp.Body.Close()
 
-	fmt.Println("Please make bid " + player.Name + ":")
 	//gameMapMu.RLock()
 	//ch := gameMap[player.Name]
 	//gameMapMu.RUnlock()
 	var input PlayerInput
 	input = <-ch
-	fmt.Println("am primit bid")
-	fmt.Println(player.Name, input.Player.Name)
-	//for len(ch) > 0 {
-	//	<-ch
-	//}
 	//for input.Player.Name != player.Name {
 	//	input = <-ch
 	//}
-	aux := make(chan PlayerInput)
-	gameMapMu.Lock()
-	gameMap[player.Name+"bid"] = aux
-	gameMapMu.Unlock()
-	fmt.Println("am primit bid", input.Player.bid)
+
+	fmt.Println("am primit bid", input.Player.bid, input.Player.Name)
 
 	player.bid = input.Player.bid
-	fmt.Println(player.bid)
 }
 
 func (player *Player) GiveCards(cards []Card) {
@@ -160,8 +150,6 @@ func (player *Player) GetValidCards(first *Card, trump *Card) []Card {
 func (player *Player) playCard(first *Card, trump *Card, gameID string, ch chan PlayerInput) Card {
 	validCards := make([]Card, len(player.cards))
 	validCards = player.GetValidCards(first, trump)
-	fmt.Println("Cartile valide sunt")
-	fmt.Println(validCards)
 
 	var validCardsToSend PlayerCards
 	validCardsToSend.Player = player.Name
@@ -200,16 +188,10 @@ func (player *Player) playCard(first *Card, trump *Card, gameID string, ch chan 
 	//gameMapMu.RLock()
 	//ch := gameMap[player.Name]
 	//gameMapMu.RUnlock()
+	var input PlayerInput
+	input = <-ch
+	fmt.Println("am primit carte", input.playedCard, input.Player.Name)
 
-	input := <-ch
-	aux := make(chan PlayerInput)
-
-	gameMapMu.Lock()
-	gameMap[player.Name+"card"] = aux
-	gameMapMu.Unlock()
-	//for len(ch) > 0 {
-	//	<-ch
-	//}
 	var j int
 	for i, c := range player.cards {
 		if c.Suite == input.playedCard.Suite && c.Value == input.playedCard.Value {

@@ -344,19 +344,15 @@ func sendMessageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getStyleFile(w http.ResponseWriter, r *http.Request) {
-	println("mergi")
 	vars := mux.Vars(r)
 	filename := vars["filename"]
-	println(filename)
 	filePath := "./style/" + filename
 	http.ServeFile(w, r, filePath)
 }
 
 func getCard(w http.ResponseWriter, r *http.Request) {
-	println("mergi")
 	vars := mux.Vars(r)
 	filename := vars["filename"]
-	println(filename)
 	filePath := "deckOfCards/SVG-cards-1.3/" + filename
 	http.ServeFile(w, r, filePath)
 
@@ -464,8 +460,6 @@ func getPlayerBid(w http.ResponseWriter, r *http.Request) {
 	}
 	lobby := requestData.Lobby
 	bid, _ := strconv.ParseInt(requestData.Bid, 10, 32)
-	fmt.Println("am facut bid")
-	fmt.Println(bid, lobby)
 	session, err := store.Get(r, "session-id")
 	if err != nil {
 		renderError(w, http.StatusInternalServerError)
@@ -474,31 +468,29 @@ func getPlayerBid(w http.ResponseWriter, r *http.Request) {
 	}
 	myUsername := session.Values["username"].(string)
 
+	fmt.Println("primesc bid de la client", bid, lobby, requestData.Jucator, myUsername)
+
 	playerInput := PlayerInput{
 		GameID: lobby,
 		Player: Player{
-			Name: myUsername,
+			Name: requestData.Jucator,
 			bid:  int(bid),
 		},
 	}
-	fmt.Println(lobby, myUsername, bid)
-	fmt.Println("De ce nu mergi in ")
-	fmt.Println(myUsername, requestData.Jucator)
 	//gameChannel := make(chan PlayerInput)
 	gameMapMu.Lock()
-	ch := gameMap[myUsername+"bid"]
+	gameMap[myUsername+"bid"] <- playerInput
 	gameMapMu.Unlock()
-	ch <- playerInput
-	fmt.Println("am luat canalul")
 	//gameChannel <- playerInput
 	w.WriteHeader(http.StatusOK)
 }
 
 func getPlayedCard(w http.ResponseWriter, r *http.Request) {
 	var requestData struct {
-		Value string `json:"value"`
-		Suite string `json:"suite"`
-		Lobby string `json:"lobby"`
+		Value   string `json:"value"`
+		Suite   string `json:"suite"`
+		Lobby   string `json:"lobby"`
+		Jucator string `json:"jucator"`
 	}
 	err := json.NewDecoder(r.Body).Decode(&requestData)
 	if err != nil {
@@ -521,17 +513,14 @@ func getPlayedCard(w http.ResponseWriter, r *http.Request) {
 	playerInput := PlayerInput{
 		GameID: lobby,
 		Player: Player{
-			Name: myUsername,
+			Name: requestData.Jucator,
 		},
 		playedCard: *NewCard(suites(suite), int(value)),
 	}
-	fmt.Println(lobby, myUsername, playerInput.playedCard)
-	fmt.Println("Cartejucata ")
-	//fmt.Println(myUsername, requestData.Jucator)
+	fmt.Println("Primesc carte de la client", requestData.Jucator, lobby, myUsername, playerInput.playedCard)
 	gameMapMu.Lock()
-	ch := gameMap[myUsername+"card"]
+	gameMap[myUsername+"card"] <- playerInput
 	gameMapMu.Unlock()
-	ch <- playerInput
 	w.WriteHeader(http.StatusOK)
 }
 
