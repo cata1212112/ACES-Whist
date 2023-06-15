@@ -45,8 +45,9 @@ func (game *Game) play() {
 		round := new(Round)
 		game.deckOfCards.index = 0
 		game.deckOfCards.ShuffleDeck()
-		round.playRound(&game.players, &game.deckOfCards, elem, game.name)
 
+		round.playRound(&game.players, &game.deckOfCards, elem, game.name)
+		game.players = append(game.players[1:], game.players[0])
 		fmt.Println("s-a terminat runda")
 		var scores PlayerScore
 		for j := 0; j < 4; j++ {

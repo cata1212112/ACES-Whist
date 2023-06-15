@@ -7,6 +7,7 @@ import (
 	"math"
 	"net/http"
 	"os"
+	"sort"
 	"time"
 )
 
@@ -25,8 +26,9 @@ func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, 
 	round.sumOfBids = 0
 	round.trump.Value = -1
 	round.first.Value = -1
-
+	indexMap := make(map[string]int)
 	for i := 0; i < 4; i++ {
+		indexMap[(*players)[i].Name] = i
 		(*players)[i].GiveCards(deck.GiveCards(numberOfCards))
 	}
 
@@ -160,6 +162,15 @@ func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, 
 		defer resp.Body.Close()
 
 		winningPlayer.tricks++
+
+		var j int
+		j = -1
+		for i := 0; i < 4; i++ {
+			if (*players)[i].Name == winningPlayer.Name {
+				j = i
+			}
+		}
+		*players = append((*players)[j:], (*players)[:j]...)
 	}
 
 	for i := 0; i < 4; i++ {
@@ -169,4 +180,8 @@ func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, 
 			(*players)[i].Score -= int(math.Abs(float64((*players)[i].tricks - (*players)[i].bid)))
 		}
 	}
+
+	sort.Slice((*players), func(i, j int) bool {
+		return indexMap[(*players)[i].Name] < indexMap[(*players)[j].Name]
+	})
 }
