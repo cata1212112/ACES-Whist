@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-
-	"github.com/gorilla/mux"
 )
 
 var Port = 5000
@@ -58,6 +58,8 @@ func main() {
 		w.WriteHeader(http.StatusNotFound)
 		renderError(w, http.StatusNotFound)
 	})
-
-	http.ListenAndServe(":"+fmt.Sprint(Port), router)
+	origins := handlers.AllowedOrigins([]string{"http://proiect.home.ro"})
+	credentials := handlers.AllowCredentials()
+	methods := handlers.AllowedMethods([]string{"POST", "GET"})
+	http.ListenAndServe(":"+fmt.Sprint(Port), handlers.CORS(credentials, methods, origins)(router))
 }
