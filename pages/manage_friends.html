@@ -11,9 +11,9 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const xhr1 = new XMLHttpRequest();
-        xhr1.open("GET", 'http://proiect.home.ro/getFriends')
+        xhr1.open("GET", "http://proiect.home.ro/getFriends")
         xhr1.onreadystatechange = () => {
-            if(xhr1.readyState == XMLHttpRequest.DONE && xhr1.status == 200) {
+            if(xhr1.readyState === XMLHttpRequest.DONE && xhr1.status === 200) {
                 response = JSON.parse(xhr1.response)
                 console.log("Friends: ", response)
                 const myDiv = document.getElementById("friends")
@@ -50,7 +50,7 @@
         xhr1.send()
 
         const xhr2 = new XMLHttpRequest();
-        xhr2.open("GET", 'http://proiect.home.ro/getFriendRequests')
+        xhr2.open("GET", "http://proiect.home.ro/getFriendRequests")
         xhr2.onreadystatechange = () => {
             if(xhr2.readyState == XMLHttpRequest.DONE && xhr2.status == 200) {
                 response = JSON.parse(xhr2.response)
@@ -109,7 +109,7 @@
         xhr2.send()
 
         const xhr3 = new XMLHttpRequest();
-        xhr3.open("GET", 'http://proiect.home.ro/getUsersNotRelatedToMe')
+        xhr3.open("GET", "http://proiect.home.ro/getUsersNotRelatedToMe")
         xhr3.onreadystatechange = () => {
             if(xhr3.readyState == XMLHttpRequest.DONE && xhr3.status == 200) {
                 response = JSON.parse(xhr3.response)
