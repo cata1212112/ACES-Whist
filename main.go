@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 var Port = 5000
@@ -20,6 +21,7 @@ func main() {
 	router := mux.NewRouter()
 	router.Use(authMiddleware) // Adding the auth middleware to the router
 
+	router.HandleFunc("/rules", getRules).Methods("GET")
 	router.HandleFunc("/", indexHandler).Methods("GET")
 	router.HandleFunc("/lobbies", lobbiesHandler).Methods("GET")
 	router.HandleFunc("/connect", onConnect).Methods("POST")

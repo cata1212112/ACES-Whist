@@ -274,6 +274,7 @@
             console.log("endRound")
             const decodedData = JSON.parse(atob(rasp["data"]));
             document.getElementById("score").innerHTML = ''
+            document.getElementById("bids").innerHTML = ''
             for (player of decodedData.players) {
                 var name = document.createElement("p")
                 name.innerHTML = "Scoreboard"
@@ -306,7 +307,6 @@
                 setTimeout(r, 750)}
             );
             document.getElementById("playedCards").innerHTML = ""
-            document.getElementById("bids").innerHTML = ""
         }
         if (rasp["flag"] === "playerBid") {
             var name = document.createElement("div")
@@ -319,6 +319,43 @@
             p = document.createElement("p")
             p.innerHTML = rasp["who"] + " " + rasp["bid"]
             document.getElementById("bids").appendChild(p)
+        }
+        if (rasp["flag"] === "tricks") {
+            lst = document.getElementById("tricks")
+            lst.innerHTML = ''
+            nm = document.createElement("h2")
+            nm.innerHTML = "Tricks"
+            lst.appendChild(nm)
+            if (Object.keys(rasp)[0] != "flag") {
+                p1 = document.createElement("div")
+                p1.innerHTML = Object.keys(rasp)[0] + " " + rasp[Object.keys(rasp)[0]]
+                lst.appendChild(p1)
+            }
+
+            if (Object.keys(rasp)[1] != "flag") {
+                p2 = document.createElement("div")
+                p2.innerHTML = Object.keys(rasp)[1] + " " + rasp[Object.keys(rasp)[1]]
+                lst.appendChild(p2)
+            }
+
+            if (Object.keys(rasp)[2] != "flag")  {
+                p3 = document.createElement("div")
+                p3.innerHTML = Object.keys(rasp)[2] + " " + rasp[Object.keys(rasp)[2]]
+                lst.appendChild(p3)
+            }
+            if (Object.keys(rasp)[3] != "flag") {
+                p4 = document.createElement("div")
+                p4.innerHTML = Object.keys(rasp)[3] + " " + rasp[Object.keys(rasp)[3]]
+                lst.appendChild(p4)
+            }
+
+            if (Object.keys(rasp)[4] != "flag") {
+                p5 = document.createElement("div")
+                p5.innerHTML = Object.keys(rasp)[4] + " " + rasp[Object.keys(rasp)[4]]
+                lst.appendChild(p5)
+            }
+
+            
         }
     })
     sub.on('subscribing', function(ctx) {
@@ -409,6 +446,9 @@
 
     </div>
     <div id="bids" style="background: white">
+
+    </div>
+    <div id="tricks" style="background: gray">
 
     </div>
     <div id="trump" style="padding: 5px;display: none">

@@ -58,6 +58,13 @@ func addConnectedClient(token string) {
 	connectedClients[token] = true
 }
 
+func getRules(w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles("./pages/rules.html")
+	session, _ := store.Get(r, "session-id")
+	pageData := LobbyData{Username: session.Values["username"], Token: session.Values["token"]}
+	t.Execute(w, pageData)
+}
+
 func removeConnectedClient(token string) {
 	mutex.Lock()
 	defer mutex.Unlock()

@@ -162,7 +162,36 @@ func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, 
 		defer resp.Body.Close()
 
 		winningPlayer.tricks++
+		command1 := map[string]interface{}{
+			"method": "publish",
+			"params": map[string]interface{}{
+				"channel": gameID,
+				"data": map[string]interface{}{
+					"flag":             "tricks",
+					(*players)[0].Name: (*players)[0].tricks,
+					(*players)[1].Name: (*players)[1].tricks,
+					(*players)[2].Name: (*players)[2].tricks,
+					(*players)[3].Name: (*players)[3].tricks,
+				},
+			},
+		}
 
+		dataA1, err1 := json.Marshal(command1)
+		if err != nil {
+			panic(err)
+		}
+		req1, err1 := http.NewRequest("POST", "http://localhost:8000/api", bytes.NewBuffer(dataA1))
+		if err != nil {
+			panic(err)
+		}
+		req1.Header.Set("Content-Type", "application/json")
+		req1.Header.Set("Authorization", "apikey a3d9c270-52df-45f8-9a66-a1bb8e9e04ce")
+		client1 := http.Client{}
+		resp1, err1 := client1.Do(req1)
+		if err1 != nil {
+			panic(err)
+		}
+		defer resp1.Body.Close()
 		var j int
 		j = -1
 		for i := 0; i < 4; i++ {
