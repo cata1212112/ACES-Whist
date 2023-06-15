@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sort"
 )
 
 //Player
@@ -87,12 +88,48 @@ func (player *Player) makeBid(isLast bool, sumBids int, numberOfCards int, gameI
 
 	fmt.Println("am primit bid", input.Player.bid, input.Player.Name)
 
+	command1 := map[string]interface{}{
+		"method": "publish",
+		"params": map[string]interface{}{
+			"channel": gameID,
+			"data": map[string]interface{}{
+				"who":  player.Name,
+				"bid":  input.Player.bid,
+				"flag": "playerBid",
+			},
+		},
+	}
+
+	dataA1, err := json.Marshal(command1)
+	if err != nil {
+		panic(err)
+	}
+	req1, err := http.NewRequest("POST", "http://localhost:8000/api", bytes.NewBuffer(dataA1))
+	if err != nil {
+		panic(err)
+	}
+	req1.Header.Set("Content-Type", "application/json")
+	req1.Header.Set("Authorization", "apikey a3d9c270-52df-45f8-9a66-a1bb8e9e04ce")
+	client1 := http.Client{}
+	resp1, err := client1.Do(req1)
+	if err != nil {
+		panic(err)
+	}
+	defer resp1.Body.Close()
+
 	player.bid = input.Player.bid
 }
 
 func (player *Player) GiveCards(cards []Card) {
 	player.cards = make([]Card, len(cards))
 	copy(player.cards, cards)
+	sort.Slice(player.cards, func(i, j int) bool {
+		if player.cards[i].Suite != player.cards[j].Suite {
+			return player.cards[i].Suite < player.cards[j].Suite
+		} else {
+			return player.cards[i].Value > player.cards[j].Value
+		}
+	})
 }
 
 func (player *Player) HasSuite(card Card) bool {

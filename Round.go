@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"os"
 	"time"
@@ -92,6 +93,7 @@ func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, 
 	(*players)[3].tricks = 0
 	fmt.Println("incepe jucatul cartilor")
 	for i := 0; i < numberOfCards; i++ {
+		time.Sleep(1 * time.Second)
 		var winningCard Card
 		var winningPlayer *Player
 		winningPlayer = nil
@@ -157,7 +159,6 @@ func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, 
 		}
 		defer resp.Body.Close()
 
-		time.Sleep(5)
 		winningPlayer.tricks++
 	}
 
@@ -165,7 +166,7 @@ func (round *Round) playRound(players *[]Player, deck *Deck, numberOfCards int, 
 		if (*players)[i].tricks == (*players)[i].bid {
 			(*players)[i].Score += 10 + (*players)[i].bid
 		} else {
-			//(*players)[i].Score -= math.Abs((*players)[i].tricks - (*players)[i].bid)
+			(*players)[i].Score -= int(math.Abs(float64((*players)[i].tricks - (*players)[i].bid)))
 		}
 	}
 }

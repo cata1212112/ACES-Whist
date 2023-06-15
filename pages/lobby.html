@@ -90,7 +90,7 @@
     client.connect();
     const sub = client.newSubscription(document.getElementById("lobby_name").innerHTML)
     sub.subscribe();
-    sub.on('publication', function (ctx) {
+    sub.on('publication', async function (ctx) {
         rasp = ctx.data
         console.log(rasp)
         if (rasp["flag"] === 99) {
@@ -132,8 +132,11 @@
                         sum = parseInt(rasp["sumBids"])
                         noCards = parseInt(rasp["numberOfCards"])
                         console.log(rasp["isLast"], intBid, sum, noCards)
-                        if (rasp["isLast"] === true && intBid + sum === noCards) {
-                            alert("The sum of all bids must not be the same as the number of cards dealt to each player " + "Sum of bids: " +rasp["sumBids"] + "NoCards : " + rasp["numberOfCards"]);
+                        if ((intBid < 0) || (intBid > noCards)) {
+                            alert("Bid must be positive and less than " + noCards);
+                        }
+                        else if ((rasp["isLast"] === true && intBid + sum === noCards)) {
+                            alert("The sum of all bids must not be the same as the number of cards dealt to each player " + "Sum of bids: " + rasp["sumBids"] + "NoCards : " + rasp["numberOfCards"]);
                         } else {
                             document.getElementById("bid_wrapper").style.display = "none";
 
@@ -147,7 +150,7 @@
                             var requestData = JSON.stringify({
                                 "bid": bid,
                                 "lobby": document.getElementById("lobby_name").innerHTML,
-                                "jucator" : document.getElementById("username").innerHTML
+                                "jucator": document.getElementById("username").innerHTML
                             });
                             console.log("trimit bidul meu???")
                             xhr1.onload = () => {
@@ -165,7 +168,7 @@
                 })
             }
         }
-        
+
         // cartile distribuite la inceputul fiecarei runde ()
         if (rasp["flag"] === "carti_joc") {
             const decodedData = JSON.parse(atob(rasp["data"]));
@@ -190,29 +193,30 @@
                 aux = document.createElement("img")
                 aux.src = trump
                 document.getElementById("trump").appendChild(aux)
+                document.getElementById("trump").style.display = 'block'
             }
         }
-        
+
         // my turn here
         if (rasp["flag"] === "validCards") {
             const decodedData = JSON.parse(atob(rasp["data"]));
             if (decodedData.username === document.getElementById("username").innerHTML) {
-                document.getElementById("request_card").style.display="grid";
+                document.getElementById("request_card").style.display = "grid";
                 for (let carte of decodedData.cards) {
                     clickableCards.add(carte.value + " " + carte.suite)
                 }
-               for (let carte of decodedData.cards) {
-                   carti_player = document.getElementById("carti_jucator")
-                   img_carte = 'http://localhost:5000/deckOfCards/SVG-cards-1.3/' + values.get(carte.value) + "_of_" + suites.get(carte.suite) + ".svg"
-                   for (let carte_img of carti_player.children) {
-                       console.log(img_carte, carte_img.src)
+                for (let carte of decodedData.cards) {
+                    carti_player = document.getElementById("carti_jucator")
+                    img_carte = 'http://localhost:5000/deckOfCards/SVG-cards-1.3/' + values.get(carte.value) + "_of_" + suites.get(carte.suite) + ".svg"
+                    for (let carte_img of carti_player.children) {
+                        console.log(img_carte, carte_img.src)
                         if (carte_img.src === img_carte) {
                             carte_img.style.opacity = '1'
                             console.log(carte_img)
                             carte_img.addEventListener("click", (event) => {
                                 console.log(event.target)
                                 target = event.target
-                                if(!clickableCards.has(target.alt))
+                                if (!clickableCards.has(target.alt))
                                     return
                                 aux = target.alt.split(" ")
                                 console.log("Clicked on: ", carte_img)
@@ -225,7 +229,7 @@
                                     "value": aux[0],
                                     "suite": aux[1],
                                     "lobby": document.getElementById("lobby_name").innerHTML,
-                                    "jucator" : document.getElementById("username").innerHTML
+                                    "jucator": document.getElementById("username").innerHTML
                                 });
                                 console.log("request data: ", requestData)
                                 xhr1.onload = () => {
@@ -236,16 +240,16 @@
                                     }
                                 }
                                 xhr1.send(requestData)
-                                clickableCards.clear() 
-                                document.getElementById("request_card").style.display="none";
-                                for(let turnIdleCard of document.getElementById("carti_jucator").children) {
-                                    if(turnIdleCard.style.opacity === '1')
+                                clickableCards.clear()
+                                document.getElementById("request_card").style.display = "none";
+                                for (let turnIdleCard of document.getElementById("carti_jucator").children) {
+                                    if (turnIdleCard.style.opacity === '1')
                                         turnIdleCard.style.opacity = '0.5'
                                 }
                             })
-                        } 
-                   }
-               }
+                        }
+                    }
+                }
             }
 
         }
@@ -255,9 +259,15 @@
             img = document.createElement("img")
             img.src = img_carte
 
-            text = document.createElement("p")
-            text.innerHTML = cine
-            document.getElementById("playedCards").appendChild(img)
+            text = document.createElement("div")
+            text.innerHTML = "Played by " + cine
+            text.style.background = 'yellow'
+
+
+            divmare = document.createElement("div")
+            divmare.appendChild(text)
+            divmare.appendChild(img)
+            document.getElementById("playedCards").appendChild(divmare)
         }
         if (rasp["flag"] === "endRound") {
             clickableCards.clear()
@@ -265,6 +275,13 @@
             const decodedData = JSON.parse(atob(rasp["data"]));
             document.getElementById("score").innerHTML = ''
             for (player of decodedData.players) {
+                var name = document.createElement("p")
+                name.innerHTML = "Scoreboard"
+                name.id = "ok2"
+                elem = document.getElementById("ok2")
+                if (elem === null) {
+                    document.getElementById("score").appendChild(name)
+                }
                 p = document.createElement("p")
                 p.innerHTML = player.name + " " + player.score
                 document.getElementById("score").appendChild(p)
@@ -285,7 +302,23 @@
             }
         }
         if (rasp["flag"] === "endHand") {
+            await new Promise(r => {
+                setTimeout(r, 750)}
+            );
             document.getElementById("playedCards").innerHTML = ""
+            document.getElementById("bids").innerHTML = ""
+        }
+        if (rasp["flag"] === "playerBid") {
+            var name = document.createElement("div")
+            name.innerHTML = "Bids"
+            name.id = "ok1"
+            elem = document.getElementById("ok1")
+            if (elem === null) {
+                document.getElementById("bids").appendChild(name)
+            }
+            p = document.createElement("p")
+            p.innerHTML = rasp["who"] + " " + rasp["bid"]
+            document.getElementById("bids").appendChild(p)
         }
     })
     sub.on('subscribing', function(ctx) {
@@ -368,20 +401,29 @@
     <button id="toggle_chat" class="action_button blueish" onclick="toggleChat()">Chat</button>
 </div>
 
-<div class="membrii">
-    <h2>Membrii</h2>
+<div style="display: flex">
+    <div class="membrii">
+        <h2>Membrii</h2>
+    </div>
+    <div id="score" style="background: gray">
+
+    </div>
+    <div id="bids" style="background: white">
+
+    </div>
 </div>
-<div id="score">
+
+<div id = "playedCards" style="width: 300px;height: 300px">
 
 </div>
+
 <div id = "container_mare">
-    <div id="trump">
-
+    <div id="trump" style="padding: 5px;display: none">
+        <div style="background: yellow;display: none">
+            <h1>TRUMP</h1>
+        </div>
     </div>
 
-    <div id = "playedCards">
-
-    </div>
 <div id="container_joc" style="display: flex">
     <div id = "carti_intoarse_stanga">
         <img src="../deckOfCards/SVG-cards-1.3/red_joker.svg">
