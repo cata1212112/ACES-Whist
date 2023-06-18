@@ -850,3 +850,8 @@ func leaderboardHandler(w http.ResponseWriter, r *http.Request) {
 	t, _ := template.ParseFiles("./pages/leaderboard.html")
 	t.Execute(w, nil)
 }
+
+func winnerHandler(w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles("./pages/winner.html")
+	t.Execute(w, nil)
+}
