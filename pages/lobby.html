@@ -192,6 +192,7 @@
                 trump = "../deckOfCards/SVG-cards-1.3/" + values.get(decodedData.trump.value) + "_of_" + suites.get(decodedData.trump.suite) + ".svg"
                 aux = document.createElement("img")
                 aux.src = trump
+                document.getElementById("trump").innerHTML = ""
                 document.getElementById("trump").appendChild(aux)
                 document.getElementById("trump").style.display = 'block'
             }
