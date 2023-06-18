@@ -11,7 +11,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const xhr1 = new XMLHttpRequest();
-        xhr1.open("GET", "http://proiect.home.ro/getFriends")
+        xhr1.open("GET", "http://localhost:5000/getFriends")
         xhr1.onreadystatechange = () => {
             if(xhr1.readyState === XMLHttpRequest.DONE && xhr1.status === 200) {
                 response = JSON.parse(xhr1.response)
@@ -28,7 +28,7 @@
                     buttonRemove.classList = "action_button red"
                     buttonRemove.addEventListener("click", () => {
                         const xhr4 = new XMLHttpRequest();
-                        xhr4.open("POST", "http://proiect.home.ro/removeFriend/" + buttonRemove.value)
+                        xhr4.open("POST", "http://localhost:5000/removeFriend/" + buttonRemove.value)
                         xhr4.onload = () => {
                             if(xhr4.status == 200) {
                                 console.log("Friend Removed")
@@ -50,7 +50,7 @@
         xhr1.send()
 
         const xhr2 = new XMLHttpRequest();
-        xhr2.open("GET", "http://proiect.home.ro/getFriendRequests")
+        xhr2.open("GET", "http://localhost:5000/getFriendRequests")
         xhr2.onreadystatechange = () => {
             if(xhr2.readyState == XMLHttpRequest.DONE && xhr2.status == 200) {
                 response = JSON.parse(xhr2.response)
@@ -67,7 +67,7 @@
                     buttonAccept.classList = "action_button blueish"
                     buttonAccept.addEventListener("click", () => {
                         const xhr4 = new XMLHttpRequest();
-                        xhr4.open("POST", "http://proiect.home.ro/acceptFriend/" + buttonAccept.value)
+                        xhr4.open("POST", "http://localhost:5000/acceptFriend/" + buttonAccept.value)
                         xhr4.onload = () => {
                             if(xhr4.status == 200) {
                                 console.log("Friend Request Accepted")
@@ -86,7 +86,7 @@
                     buttonReject.classList = "action_button red"
                     buttonReject.addEventListener("click", () => {
                         const xhr4 = new XMLHttpRequest();
-                        xhr4.open("POST", "http://proiect.home.ro/declineFriend/" + buttonReject.value)
+                        xhr4.open("POST", "http://localhost:5000/declineFriend/" + buttonReject.value)
                         xhr4.onload = () => {
                             if(xhr4.status == 200) {
                                 console.log("Friend Request Declined")
@@ -109,7 +109,7 @@
         xhr2.send()
 
         const xhr3 = new XMLHttpRequest();
-        xhr3.open("GET", "http://proiect.home.ro/getUsersNotRelatedToMe")
+        xhr3.open("GET", "http://localhost:5000/getUsersNotRelatedToMe")
         xhr3.onreadystatechange = () => {
             if(xhr3.readyState == XMLHttpRequest.DONE && xhr3.status == 200) {
                 response = JSON.parse(xhr3.response)
@@ -127,7 +127,7 @@
                     button.addEventListener("click", () => {
                         const xhr4 = new XMLHttpRequest();
                         try {
-                            xhr4.open("POST", "http://proiect.home.ro/addFriend/" + button.value)
+                            xhr4.open("POST", "http://localhost:5000/addFriend/" + button.value)
                             xhr4.onload = () => {
                                 if(xhr4.status == 200) {
                                     console.log("Friend Request Sent")

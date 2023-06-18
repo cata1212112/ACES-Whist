@@ -44,7 +44,7 @@
 
     window.onload = function () {
         const xhr1 = new XMLHttpRequest();
-        xhr1.open("GET", 'http://proiect.home.ro/getFriends')
+        xhr1.open("GET", 'http://localhost:5000/getFriends')
         xhr1.onload = () => {
             if(xhr1.status == 200) {
                 response = JSON.parse(xhr1.response)
@@ -54,7 +54,7 @@
                 console.log("My Friends: ", myFriends)
 
                 const xhr = new XMLHttpRequest();
-                xhr.open("GET", 'http://proiect.home.ro/getAllLobbies')
+                xhr.open("GET", 'http://localhost:5000/getAllLobbies')
                 xhr.onload = function () {
                     if (xhr.status === 200) {
                         var aux = JSON.parse(xhr.response)
@@ -62,7 +62,7 @@
                         for (let x in channels) {
                             console.log("Channel: " + x + " Members: " + channels[x]["num_clients"] + "\n")
                             const xhr = new XMLHttpRequest();
-                            xhr.open("GET", 'http://proiect.home.ro/lobbyMembers/' + x, false)
+                            xhr.open("GET", 'http://localhost:5000/lobbyMembers/' + x, false)
                             xhr.onload = () => {
                                 if (xhr.status === 200) {
                                     var aux = JSON.parse(xhr.response)
